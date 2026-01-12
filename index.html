@@ -1112,14 +1112,9 @@
         });
 
         buttonsContainer.appendChild(createElement('button', {
-          className: 'flex-1 bg-success-600 hover:bg-success-700 text-white font-medium py-3 px-4 rounded-md shadow-md hover:shadow-lg transition-all text-sm sm:text-base',
+          className: 'w-full bg-success-600 hover:bg-success-700 text-white font-medium py-3 px-4 rounded-md shadow-md hover:shadow-lg transition-all text-sm sm:text-base',
           onClick: saveProcess
         }, '💾 İşlem Olarak Kaydet'));
-
-        buttonsContainer.appendChild(createElement('button', {
-          className: 'flex-1 bg-anthracite-600 hover:bg-anthracite-700 text-white font-medium py-3 px-4 rounded-md shadow-md hover:shadow-lg transition-all text-sm sm:text-base',
-          onClick: printResults
-        }, '🖨️ Yazdır / PDF'));
 
         const selectedAltCard = createCard(null, [
           renderSelectedAlternatives(),
@@ -2412,140 +2407,6 @@
       };
 
       reader.readAsText(file);
-    }
-
-    // Print/Export PDF functionality
-    function printResults() {
-      try {
-        // Create a print-friendly version
-        const printWindow = window.open('', '_blank');
-        const printContent = generatePrintContent();
-
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-
-        // Wait for content to load, then print
-        printWindow.onload = () => {
-          printWindow.print();
-        };
-
-        showNotification('Yazdırma penceresi açılıyor...', 'info');
-      } catch (e) {
-        console.error('Print hatası:', e);
-        showNotification('Yazdırma sırasında hata oluştu', 'error');
-      }
-    }
-
-    // Generate print-friendly HTML content
-    function generatePrintContent() {
-      const now = new Date().toLocaleString('tr-TR');
-
-      let content = `
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <title>Emsal Hesaplama Raporu</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { color: #333; border-bottom: 2px solid #5D5CDE; padding-bottom: 10px; }
-    h2 { color: #5D5CDE; margin-top: 20px; }
-    table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #5D5CDE; color: white; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-    .info-box { background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 15px 0; }
-    .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
-    @media print {
-      .no-print { display: none; }
-    }
-  </style>
-</head>
-<body>
-  <h1>Emsal Hesaplama Raporu (Byres)</h1>
-  <p class="footer">Rapor Tarihi: ${now}</p>
-`;
-
-      // Add main info
-      if (state.mainInfo.arsaAlani) {
-        content += `
-  <div class="info-box">
-    <h2>Ana Bilgiler</h2>
-    <table>
-      <tr><td><strong>Arsa Alanı</strong></td><td>${state.mainInfo.arsaAlani} m²</td></tr>
-      <tr><td><strong>KAKS (Baz Emsal)</strong></td><td>${state.mainInfo.kaks}</td></tr>
-      <tr><td><strong>Kat Sayısı</strong></td><td>${state.mainInfo.katSayisi}</td></tr>
-      <tr><td><strong>Çarpan Sayısı</strong></td><td>${state.mainInfo.carpanSayisi}</td></tr>
-    </table>
-  </div>
-`;
-      }
-
-      // Add karma list if exists
-      if (state.karmaList.length > 0) {
-        content += `
-  <div class="info-box">
-    <h2>Karma Alanlar</h2>
-    <table>
-      <thead>
-        <tr><th>Daire Tipi</th><th>Daire Sayısı</th><th>Net Alan (m²)</th><th>Brüt Alan (m²)</th></tr>
-      </thead>
-      <tbody>
-`;
-        state.karmaList.forEach(item => {
-          content += `        <tr><td>${item.daireType}</td><td>${item.daireSayisi}</td><td>${item.netAlan}</td><td>${item.brutAlan}</td></tr>\n`;
-        });
-        content += `
-      </tbody>
-    </table>
-  </div>
-`;
-      }
-
-      // Add results if exists
-      if (state.result) {
-        content += `
-  <div class="info-box">
-    <h2>Hesaplama Sonuçları</h2>
-    <table>
-      <tr><td><strong>Kullanılan Emsal</strong></td><td>${state.result.usedEmsal.toFixed(2)}</td></tr>
-      <tr><td><strong>Toplam İnşaat Alanı</strong></td><td>${state.result.totalArea.toFixed(2)} m²</td></tr>
-      <tr><td><strong>Kalan Alan (Net)</strong></td><td>${state.result.remainingNetArea.toFixed(2)} m²</td></tr>
-      <tr><td><strong>Kalan Alan (Brüt)</strong></td><td>${state.result.remainingBrutArea.toFixed(2)} m²</td></tr>
-      <tr><td><strong>Kat Başına Alan</strong></td><td>${state.result.floorArea.toFixed(2)} m²</td></tr>
-    </table>
-  </div>
-`;
-      }
-
-      // Add selected alternatives if exists
-      if (state.finalAlternatives && state.finalAlternatives.length > 0) {
-        content += `
-  <div class="info-box">
-    <h2>Seçilen Alternatifler (${state.kat} Kat İçin)</h2>
-    <table>
-      <thead>
-        <tr><th>Daire Tipi</th><th>Toplam Daire</th><th>Kat Başına</th><th>Net (m²)</th><th>Brüt (m²)</th></tr>
-      </thead>
-      <tbody>
-`;
-        state.finalAlternatives.forEach(alt => {
-          content += `        <tr><td>${alt.type}</td><td>${alt.totalUnits}</td><td>${alt.unitsPerFloor}</td><td>${alt.netArea}</td><td>${alt.brutArea}</td></tr>\n`;
-        });
-        content += `
-      </tbody>
-    </table>
-  </div>
-`;
-      }
-
-      content += `
-  <p class="footer">Bu rapor Emsal Hesaplama (Byres) uygulaması ile oluşturulmuştur.</p>
-</body>
-</html>
-`;
-
-      return content;
     }
 
     // History editing functions
