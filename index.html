@@ -1,0 +1,2889 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>Emsal Hesaplama (Byres)</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+  <style>
+    /* Add basic fallback styles in case Tailwind fails to load */
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .hidden { display: none !important; }
+    .text-red-500 { color: #ef4444; }
+    .bg-gray-50 { background-color: #f9fafb; }
+  </style>
+  <script>
+    // Suppress Tailwind CDN warning in console
+    window.tailwindConfig = {
+      corePlugins: {
+        preflight: true,
+      }
+    };
+
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#DC2626',
+              50: '#fee2e2',
+              100: '#fecaca',
+              200: '#fca5a5',
+              300: '#f87171',
+              400: '#ef4444',
+              500: '#dc2626',
+              600: '#b91c1c',
+              700: '#991b1b',
+              800: '#7f1d1d',
+              900: '#651010',
+            },
+            anthracite: {
+              DEFAULT: '#2D3436',
+              50: '#e8e9ea',
+              100: '#d1d3d5',
+              200: '#a3a7ab',
+              300: '#757b81',
+              400: '#474f57',
+              500: '#2d3436',
+              600: '#24292b',
+              700: '#1b1f20',
+              800: '#121516',
+              900: '#090a0b',
+            },
+            success: {
+              DEFAULT: '#0ea5e9',
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 dark:bg-anthracite-800 transition-colors duration-200">
+  <div id="app" class="w-full max-w-5xl mx-auto mt-2 sm:mt-4 px-2 sm:px-4 pb-4 sm:pb-8 text-gray-900 dark:text-gray-100"></div>
+
+  <script>
+    // Detect dark mode preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+      if (event.matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    });
+
+    // Constants and helper functions
+    const C = { 
+      SC: 0.1, 
+      MIN: 30, 
+      OPT: ["1+1", "2+0", "2+1", "3+1", "4+1", "TİCARİ"] 
+    };
+    
+    // Helper functions
+    const roundToFive = num => Math.ceil(num / 5) * 5;
+    const calculateBrut = net => roundToFive(net * 1.18 + 12);
+    const getType = net =>
+      net >= C.MIN
+        ? net < 50 ? "1+1" : net < 78 ? "2+0" : net < 98 ? "2+1" : net < 150 ? "3+1" : "4+1"
+        : "Geçersiz";
+
+    // Debounce function for performance optimization
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+    
+    // Format alternative string
+    const formatAlternative = (alt, i, k, arr) => {
+      let s = `Alternatif ${i + 1}: (${k} kat) -- ${alt.brutArea} m² den ${alt.type}, ${alt.totalUnits} daire`;
+      if (arr?.length)
+        s += " " + arr
+          .map(o =>
+            o.daireType === "TİCARİ"
+              ? `ve ${o.netAlan} m² ticari net alan çıkar`
+              : `ve ${o.brutAlan} m² den ${o.daireType}, ${o.daireSayisi} daire çıkar`
+          ).join(" ");
+      s = s.trim();
+      if (!s.endsWith('çıkar')) {
+        s += ' çıkar';
+      }
+      return s;
+    };
+    
+    // LocalStorage for persistent data storage
+    const STORAGE_KEY = 'emsalHesaplamaData';
+    let processHistoryData = [];
+
+    // Load data from localStorage on startup
+    const loadFromStorage = () => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          processHistoryData = parsed.history || [];
+          state.history = [...processHistoryData]; // Sync state.history
+          // Restore other state if needed
+          if (parsed.mainInfo) state.mainInfo = parsed.mainInfo;
+          if (parsed.karmaList) state.karmaList = parsed.karmaList;
+          if (parsed.historyTheme) state.historyTheme = parsed.historyTheme;
+          return true;
+        }
+      } catch (e) {
+        console.error('LocalStorage yükleme hatası:', e);
+        showNotification('Veriler yüklenirken hata oluştu', 'error');
+      }
+      return false;
+    };
+
+    // Save data to localStorage
+    const saveToStorage = () => {
+      try {
+        const dataToSave = {
+          history: processHistoryData,
+          mainInfo: state.mainInfo,
+          karmaList: state.karmaList,
+          historyTheme: state.historyTheme,
+          timestamp: new Date().toISOString()
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+        return true;
+      } catch (e) {
+        console.error('LocalStorage kaydetme hatası:', e);
+        showNotification('Veriler kaydedilirken hata oluştu', 'error');
+        return false;
+      }
+    };
+
+    // Debounced version for auto-save (waits 500ms after last change)
+    const debouncedSaveToStorage = debounce(saveToStorage, 500);
+
+    // History functions with localStorage integration
+    const saveProcessHistory = data => {
+      processHistoryData.push(data);
+      saveToStorage();
+      return [...processHistoryData];
+    };
+    const getProcessHistory = () => [...processHistoryData];
+    const clearProcessHistory = () => {
+      processHistoryData = [];
+      saveToStorage();
+      return [];
+    };
+    
+    // Form verilerini temizleme fonksiyonu
+    const clearFormData = () => {
+      // Karma verilerini sıfırla
+      state.karmaData = { 
+        daireSayisi: "", 
+        netAlan: "", 
+        daireType: "3+1" 
+      };
+      state.karmaTypeTouched = false;
+      state.karmaList = [];
+      
+      // Sonuçları temizle
+      state.result = null;
+      state.selectedAltIndexes = [];
+      state.finalAlternatives = null;
+      state.error = "";
+      
+      // Kayıtları (history) temizle
+      processHistoryData = [];
+      state.history = [];
+      
+      // Yüklenen dosyaları temizle
+      state.files = [];
+      
+      // LocalStorage'ı güncelle
+      saveToStorage();
+      
+      // Arayüzü yenile
+      renderApp();
+      
+      // Bildirim göster
+      showNotification('Veriler temizlendi (ana bilgiler korundu)', 'success');
+    };
+
+    // Notification system
+    let notificationTimeout = null;
+    const showNotification = (message, type = 'info') => {
+      if (notificationTimeout) {
+        clearTimeout(notificationTimeout);
+      }
+      
+      const existingNotification = document.getElementById('notification');
+      if (existingNotification) {
+        existingNotification.remove();
+      }
+      
+      let bgColor, textColor;
+      
+      if (type === 'success') {
+        bgColor = 'bg-sky-50 dark:bg-sky-900/30';
+        textColor = 'text-sky-800 dark:text-sky-200';
+      } else if (type === 'error') {
+        bgColor = 'bg-red-50 dark:bg-red-900/30';
+        textColor = 'text-red-800 dark:text-red-200';
+      } else {
+        bgColor = 'bg-blue-50 dark:bg-blue-900/30';
+        textColor = 'text-blue-800 dark:text-blue-200';
+      }
+      
+      const notification = document.createElement('div');
+      notification.id = 'notification';
+      notification.className = `fixed bottom-4 right-4 z-50 p-4 rounded-lg shadow-lg border ${bgColor} ${textColor} transition-opacity duration-300`;
+      notification.textContent = message;
+      notification.style.opacity = '0';
+      
+      document.body.appendChild(notification);
+      
+      // Animate in
+      setTimeout(() => {
+        notification.style.opacity = '1';
+      }, 10);
+      
+      // Auto-hide after 3 seconds
+      notificationTimeout = setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      }, 3000);
+    };
+
+    // Utility functions
+    function createElement(tag, props = {}, children = []) {
+      const element = document.createElement(tag);
+      const isTextInput = tag.toLowerCase() === 'input' && props.type && props.type.toLowerCase() === 'text';
+      const isTextArea = tag.toLowerCase() === 'textarea';
+      const isSelect = tag.toLowerCase() === 'select';
+      
+      let valueProp = null; // Store value prop separately for inputs/textareas
+      
+      // Apply attributes and event listeners
+      Object.entries(props).forEach(([key, value]) => {
+        if (key.startsWith('on') && typeof value === 'function') {
+          const eventName = key.slice(2).toLowerCase();
+          element.addEventListener(eventName, value);
+        } else if (key === 'className') {
+          element.className = value;
+        } else if (key === 'disabled') {
+          if (value) element.setAttribute('disabled', '');
+        } else if (key === 'innerHTML') {
+          element.innerHTML = value;
+        } else if (key === 'checked') {
+          element.checked = !!value; // Set property directly
+        } else if (key === 'selected' && isSelect) {
+          // 'selected' for option elements is handled later or should be managed by parent select value
+        } else if (key === 'value' && (isTextInput || isTextArea || isSelect)) {
+          // Store value to set it directly later for input/textarea/select
+          valueProp = value;
+        } else if (key === 'style' && typeof value === 'object') {
+          Object.assign(element.style, value);
+        } else if (key !== 'selected') { // Avoid setting selected as attribute for options
+          element.setAttribute(key, value);
+        }
+      });
+      
+      // Append children (important for select options)
+      if (Array.isArray(children)) {
+        children.forEach(child => {
+          if (child !== null && child !== undefined) {
+            if (typeof child === 'string' || typeof child === 'number') {
+              element.appendChild(document.createTextNode(child.toString()));
+            } else {
+              element.appendChild(child);
+            }
+          }
+        });
+      } else if (children !== null && children !== undefined) {
+        if (typeof children === 'string' || typeof children === 'number') {
+          element.appendChild(document.createTextNode(children.toString()));
+        } else {
+          element.appendChild(children);
+        }
+      }
+      
+      // Set value property directly *after* children are appended (especially for select)
+      if (valueProp !== null && (isTextInput || isTextArea || isSelect)) {
+        element.value = valueProp;
+      }
+      
+      return element;
+    }
+
+    // App state
+    const state = {
+      activeTab: 'form',
+      mainInfo: { arsaAlani: "", kaks: "", katSayisi: "1", carpanSayisi: "0" },
+      karmaData: { daireSayisi: "", netAlan: "", daireType: "3+1" },
+      karmaTypeTouched: false,
+      karmaList: [],
+      result: null,
+      selectedAltIndexes: [],
+      finalAlternatives: null,
+      kat: 1,
+      error: "",
+      history: getProcessHistory(),
+      files: [],
+      isDarkMode: document.documentElement.classList.contains('dark'),
+      hiddenCols: {
+        alternative: false,
+        daireTipi: false,
+        toplamDaire: false,
+        katBasina: true,
+        net: true,
+        brut: false
+      },
+      zoom: 100,
+      showZoomControls: false,
+      editingHistoryIndex: -1,
+      containerDimensions: {
+        width: '100%',
+        height: '600px'
+      },
+      historyTheme: 'blue' // blue, green, purple, orange, red
+    };
+
+    // Main app components
+    function renderApp() {
+      const appContainer = document.getElementById('app');
+      appContainer.innerHTML = '';
+      
+      // Add global styles
+      const styles = createElement('style', {}, `
+        .image-container {
+          min-width: 300px;
+          min-height: 200px;
+          max-width: 100%;
+          max-height: 800px;
+          position: relative;
+          cursor: grab;
+          background: #f5f5f5;
+          border-radius: 8px;
+        }
+        .dark .image-container {
+          background: #1f2937;
+        }
+        .image-container:active {
+          cursor: grabbing;
+        }
+        .zoom-controls {
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          background: rgba(255, 255, 255, 0.95);
+          padding: 8px 16px;
+          border-radius: 20px;
+          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          z-index: 1000;
+          opacity: 0;
+          transform: translateY(10px);
+          transition: opacity 0.3s ease, transform 0.3s ease;
+          user-select: none;
+        }
+        .dark .zoom-controls {
+          background: rgba(30, 41, 59, 0.95);
+          color: #f3f4f6;
+        }
+        .zoom-controls.visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .zoom-reset {
+          padding: 4px 12px;
+          background: #f3f4f6;
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          cursor: pointer;
+          font-size: 14px;
+          transition: all 0.2s ease;
+        }
+        .dark .zoom-reset {
+          background: #374151;
+          border-color: #4b5563;
+          color: #f3f4f6;
+        }
+        .zoom-reset:hover {
+          background: #e5e7eb;
+          transform: scale(1.05);
+        }
+        .split-pane-container {
+          display: flex;
+          width: 100%;
+          height: 600px;
+          position: relative;
+          border: 2px solid #e5e7eb;
+          border-radius: 8px;
+          overflow: hidden;
+          background-color: white;
+        }
+        .dark .split-pane-container {
+          border-color: #4b5563;
+          background-color: #1f2937;
+        }
+        .split-pane-item {
+          height: 100%;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          transition: width 0.15s ease;
+        }
+        .split-pane-divider {
+          width: 8px;
+          height: 100%;
+          background-color: #f3f4f6;
+          position: absolute;
+          top: 0;
+          cursor: col-resize;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 10;
+          transition: background-color 0.2s;
+        }
+        .dark .split-pane-divider {
+          background-color: #374151;
+        }
+        .split-pane-divider:hover {
+          background-color: #e5e7eb;
+        }
+        .dark .split-pane-divider:hover {
+          background-color: #4b5563;
+        }
+        .split-pane-divider::after {
+          content: '';
+          width: 4px;
+          height: 36px;
+          background-color: #9ca3af;
+          border-radius: 2px;
+        }
+        .dark .split-pane-divider::after {
+          background-color: #6b7280;
+        }
+        
+        /* Resize handle styles */
+        .resize-handle {
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          width: 20px;
+          height: 20px;
+          cursor: nwse-resize;
+          z-index: 20;
+        }
+        
+        .resize-handle::before {
+          content: "";
+          position: absolute;
+          right: 3px;
+          bottom: 3px;
+          width: 12px;
+          height: 12px;
+          border-right: 3px solid #9ca3af;
+          border-bottom: 3px solid #9ca3af;
+          border-bottom-right-radius: 2px;
+        }
+        
+        .dark .resize-handle::before {
+          border-color: #6b7280;
+        }
+        
+        @keyframes clickEffect {
+          0% { background-color: #9333ea; }
+          100% { background-color: #7e22ce; }
+        }
+        .save-button {
+          transition: background-color 0.2s;
+        }
+        .save-button.animating {
+          animation: clickEffect 0.2s ease;
+        }
+        
+        /* Dark mode text visibility fixes */
+        .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+          color: #f3f4f6;
+        }
+        .dark .text-gray-800 {
+          color: #f3f4f6;
+        }
+        .dark .text-gray-700 {
+          color: #e5e7eb;
+        }
+        .dark .text-gray-600 {
+          color: #d1d5db;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+          input[type="text"],
+          input[type="number"],
+          select,
+          textarea,
+          button {
+            min-height: 44px; /* Touch target size */
+          }
+
+          /* Prevent zoom on input focus on iOS */
+          input[type="text"],
+          input[type="number"],
+          select,
+          textarea {
+            font-size: 16px !important;
+          }
+        }
+      `);
+      appContainer.appendChild(styles);
+      
+      // Header with title and theme toggle
+      const header = createElement('header', {
+        className: 'mb-4 md:mb-6 flex items-center justify-between bg-gradient-to-br from-slate-700 via-slate-600 to-slate-500 dark:from-slate-800 dark:via-slate-700 dark:to-slate-600 p-3 md:p-6 rounded-xl shadow-2xl border border-slate-400/20'
+      }, [
+        createElement('h1', {
+          className: 'text-xl md:text-3xl font-bold flex-1 text-center text-white drop-shadow-lg tracking-wide'
+        }, 'Emsal Hesaplama (Byres)'),
+
+        createElement('button', {
+          className: 'p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm transition-all flex-shrink-0',
+          title: state.isDarkMode ? 'Açık Moda Geç' : 'Koyu Moda Geç',
+          onClick: toggleDarkMode
+        }, [
+          createElement('svg', {
+            className: 'w-5 h-5 md:w-6 md:h-6',
+            fill: 'none',
+            viewBox: '0 0 24 24',
+            stroke: 'currentColor',
+            innerHTML: state.isDarkMode
+              ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>'
+              : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>'
+          })
+        ])
+      ]);
+      appContainer.appendChild(header);
+      
+      // Error message
+      if (state.error) {
+        const alertElement = createElement('div', {
+          className: 'border-l-4 p-4 mb-4 bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400'
+        }, state.error);
+        appContainer.appendChild(alertElement);
+      }
+      
+      // Tab navigation
+      const tabContainer = createElement('div', {
+        className: 'mb-4 flex gap-1 md:gap-2 justify-center'
+      }, [
+        createElement('button', {
+          className: 'px-3 md:px-6 py-2 md:py-3 text-sm md:text-base font-medium rounded-t-lg transition-all bg-red-500 dark:bg-red-600 text-white hover:bg-red-600 dark:hover:bg-red-700',
+          onClick: clearFormData
+        }, 'Temizle'),
+
+        createElement('button', {
+          className: `px-3 md:px-6 py-2 md:py-3 text-sm md:text-base font-medium rounded-t-lg transition-all ${
+            state.activeTab === 'form'
+              ? "bg-white dark:bg-anthracite-700 text-primary-600 dark:text-primary-400 border-t-4 border-primary-600 shadow-md"
+              : "bg-anthracite-100 dark:bg-anthracite-600 text-anthracite-700 dark:text-gray-300 hover:bg-anthracite-200 dark:hover:bg-anthracite-500"
+          }`,
+          onClick: () => {
+            state.activeTab = 'form';
+            renderApp();
+          }
+        }, 'Form'),
+
+        createElement('button', {
+          className: `px-3 md:px-6 py-2 md:py-3 text-sm md:text-base font-medium rounded-t-lg transition-all ${
+            state.activeTab === 'results'
+              ? "bg-white dark:bg-anthracite-700 text-success-600 dark:text-success-400 border-t-4 border-success-600 shadow-md"
+              : "bg-anthracite-100 dark:bg-anthracite-600 text-anthracite-700 dark:text-gray-300 hover:bg-anthracite-200 dark:hover:bg-anthracite-500"
+          }`,
+          onClick: () => {
+            state.activeTab = 'results';
+            renderApp();
+          }
+        }, 'Sonuçlar'),
+
+        createElement('button', {
+          className: `px-3 md:px-6 py-2 md:py-3 text-sm md:text-base font-medium rounded-t-lg transition-all ${
+            state.activeTab === 'history'
+              ? "bg-white dark:bg-anthracite-700 text-anthracite-700 dark:text-anthracite-200 border-t-4 border-anthracite-600 shadow-md"
+              : "bg-anthracite-100 dark:bg-anthracite-600 text-anthracite-700 dark:text-gray-300 hover:bg-anthracite-200 dark:hover:bg-anthracite-500"
+          }`,
+          onClick: () => {
+            state.activeTab = 'history';
+            renderApp();
+          }
+        }, 'Kayıtlar')
+      ]);
+      appContainer.appendChild(tabContainer);
+      
+      // Tab content
+      let tabContent;
+      switch (state.activeTab) {
+        case 'form':
+          tabContent = renderFormTab();
+          break;
+        case 'results':
+          tabContent = renderResultsTab();
+          break;
+        case 'history':
+          tabContent = renderHistoryTab();
+          break;
+      }
+      
+      appContainer.appendChild(tabContent);
+    }
+    
+    function createCard(title, children, className = '') {
+      const card = createElement('div', {
+        className: `bg-white dark:bg-anthracite-700 rounded-lg shadow-lg border border-gray-200 dark:border-anthracite-600 p-3 md:p-4 mb-3 md:mb-4 ${className}`
+      });
+
+      if (title) {
+        const titleElement = createElement('h2', {
+          className: 'text-xl md:text-2xl font-bold mb-2 md:mb-3 text-anthracite-800 dark:text-white'
+        }, title);
+        card.appendChild(titleElement);
+      }
+      
+      if (Array.isArray(children)) {
+        children.forEach(child => {
+          if (child) card.appendChild(child);
+        });
+      } else if (children) {
+        card.appendChild(children);
+      }
+      
+      return card;
+    }
+    
+    function createLabel(text) {
+      return createElement('label', {
+        className: 'block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300'
+      }, text);
+    }
+    
+    // Toggle dark mode
+    function toggleDarkMode() {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        state.isDarkMode = false;
+      } else {
+        document.documentElement.classList.add('dark');
+        state.isDarkMode = true;
+      }
+      renderApp();
+    }
+    
+    // Tab render functions
+    function renderFormTab() {
+      const container = createElement('div', {
+        className: 'grid grid-cols-1 md:grid-cols-2 gap-4'
+      });
+      
+      // Ana Bilgiler Card
+      const mainInfoForm = createElement('div', {
+        className: 'grid grid-cols-1 gap-4'
+      });
+      
+      // Arsa Alanı
+      const arsaAlaniGroup = createElement('div');
+      arsaAlaniGroup.appendChild(createLabel('Arsa Alanı (m²)'));
+      arsaAlaniGroup.appendChild(createElement('input', {
+        type: 'number',
+        min: '0',
+        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+        value: state.mainInfo.arsaAlani,
+        onInput: e => {
+          state.mainInfo.arsaAlani = e.target.value;
+          debouncedSaveToStorage();
+        }
+      }));
+      mainInfoForm.appendChild(arsaAlaniGroup);
+
+      // Kat Sayısı
+      const katSayisiGroup = createElement('div');
+      katSayisiGroup.appendChild(createLabel('Kat Sayısı'));
+      katSayisiGroup.appendChild(createElement('input', {
+        type: 'number',
+        min: '1',
+        className: 'border-2 border-yellow-400 bg-yellow-50 focus:border-yellow-500 focus:ring-yellow-500 rounded p-2 w-full text-base font-medium dark:bg-yellow-900/30 dark:border-yellow-600 dark:text-yellow-200',
+        value: state.mainInfo.katSayisi,
+        onInput: e => {
+          state.mainInfo.katSayisi = e.target.value;
+          debouncedSaveToStorage();
+        }
+      }));
+      mainInfoForm.appendChild(katSayisiGroup);
+
+      // KAKS
+      const kaksGroup = createElement('div');
+      kaksGroup.appendChild(createLabel('KAKS (Baz Emsal)'));
+      const kaksDefaults = ['1', '1.2', '1.5', '1.8', '2', '2.55'];
+      const kaksDatalist = createElement('datalist', { id: 'kaks-options' });
+      kaksDefaults.forEach(value => {
+        kaksDatalist.appendChild(createElement('option', { value }));
+      });
+      kaksGroup.appendChild(kaksDatalist);
+      kaksGroup.appendChild(createElement('input', {
+        type: 'number',
+        step: '0.01',
+        min: '0',
+        list: 'kaks-options',
+        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+        value: state.mainInfo.kaks,
+        onInput: e => {
+          const normalizedValue = e.target.value.replace(',', '.');
+          if (normalizedValue !== e.target.value) {
+            e.target.value = normalizedValue;
+          }
+          state.mainInfo.kaks = normalizedValue;
+          debouncedSaveToStorage();
+        }
+      }));
+      mainInfoForm.appendChild(kaksGroup);
+      
+      // Çarpan Sayısı
+      const carpanGroup = createElement('div');
+      carpanGroup.appendChild(createLabel('Çarpan Sayısı'));
+      
+      const carpanSelect = createElement('select', {
+        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+        onChange: e => {
+          state.mainInfo.carpanSayisi = e.target.value;
+          debouncedSaveToStorage();
+        }
+      });
+      
+      // Çarpan seçenekleri
+      [
+        { value: '0', label: 'Çarpansız' },
+        { value: '1', label: '1 Çarpan' },
+        { value: '2', label: '2 Çarpan' },
+        { value: '3', label: '3 Çarpan' }
+      ].forEach(option => {
+        carpanSelect.appendChild(createElement('option', {
+          value: option.value,
+          selected: option.value === state.mainInfo.carpanSayisi
+        }, option.label));
+      });
+      
+      // Seçilen değeri ayarla (eski yöntem güvenilir olmadığı için)
+      for (let i = 0; i < carpanSelect.options.length; i++) {
+        if (carpanSelect.options[i].value === state.mainInfo.carpanSayisi) {
+          carpanSelect.selectedIndex = i;
+          break;
+        }
+      }
+      
+      carpanGroup.appendChild(carpanSelect);
+      mainInfoForm.appendChild(carpanGroup);
+      
+      // Create and add the main info card
+      const mainInfoCard = createCard('Ana Bilgiler', mainInfoForm);
+      container.appendChild(mainInfoCard);
+      
+      // Karma Form
+      const karmaForm = createElement('div', {
+        className: 'grid grid-cols-1 gap-4'
+      });
+      
+      // Daire Tipi
+      const daireTypeGroup = createElement('div');
+      daireTypeGroup.appendChild(createLabel('Daire Tipi'));
+      
+      const daireTypeSelect = createElement('select', {
+        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+        value: state.karmaData.daireType,
+        onChange: e => {
+          state.karmaData.daireType = e.target.value;
+          state.karmaTypeTouched = true;
+          renderApp();
+        }
+      });
+      
+      C.OPT.forEach(option => {
+        daireTypeSelect.appendChild(createElement('option', {
+          value: option,
+          selected: option === state.karmaData.daireType
+        }, option));
+      });
+      
+      // Güvenli tarafta kalmak için değeri tekrar ata
+      daireTypeSelect.value = state.karmaData.daireType;
+      
+      daireTypeGroup.appendChild(daireTypeSelect);
+      karmaForm.appendChild(daireTypeGroup);
+      
+      // Net Alan
+      const netAlanGroup = createElement('div');
+      netAlanGroup.appendChild(createLabel('Net Alan (m²)'));
+      netAlanGroup.appendChild(createElement('input', {
+        type: 'number',
+        min: '0',
+        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+        value: state.karmaData.netAlan,
+        onChange: e => {
+          state.karmaData.netAlan = e.target.value;
+          
+          // Eğer kullanıcı tipi elle seçmediyse net alana göre otomatik belirle
+          const netVal = parseFloat(e.target.value);
+          if (!state.karmaTypeTouched && !isNaN(netVal) && netVal >= C.MIN) {
+            const autoType = getType(netVal);
+            if (autoType !== "Geçersiz" && autoType !== state.karmaData.daireType) {
+              state.karmaData.daireType = autoType;
+              renderApp();
+              return;
+            }
+          }
+        }
+      }));
+      karmaForm.appendChild(netAlanGroup);
+      
+      // Daire Sayısı (TİCARİ dışında)
+      if (state.karmaData.daireType !== 'TİCARİ') {
+        const daireSayisiGroup = createElement('div');
+        daireSayisiGroup.appendChild(createLabel('Daire Sayısı'));
+        daireSayisiGroup.appendChild(createElement('input', {
+          type: 'number',
+          min: '0',
+          className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+          value: state.karmaData.daireSayisi,
+          onChange: e => {
+            state.karmaData.daireSayisi = e.target.value;
+          }
+        }));
+        karmaForm.appendChild(daireSayisiGroup);
+      }
+      
+      // Ekle Butonu
+      const ekleButtonGroup = createElement('div', {
+        className: 'flex items-end'
+      });
+      const ekleButton = createElement('button', {
+        className: 'w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-md dark:bg-yellow-600 dark:hover:bg-yellow-700',
+        onClick: addKarma
+      }, 'Ekle');
+      ekleButtonGroup.appendChild(ekleButton);
+      karmaForm.appendChild(ekleButtonGroup);
+      
+      // Karma List
+      if (state.karmaList.length > 0) {
+        const karmaListContainer = createElement('div', {
+          className: 'mt-4'
+        });
+        
+        const karmaListTitle = createElement('h4', {
+          className: 'font-semibold mb-2'
+        }, 'Tanımlanan Karma Alanlar');
+        karmaListContainer.appendChild(karmaListTitle);
+        
+        state.karmaList.forEach((item, index) => {
+          const karmaItem = createElement('div', {
+            className: 'flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded border dark:border-gray-600 mb-2'
+          });
+          
+          const karmaText = createElement('span', {
+            className: 'text-sm'
+          }, `${item.daireType} -- ${item.daireSayisi} adet, ${item.netAlan} m² (Net)`);
+          karmaItem.appendChild(karmaText);
+          
+          const deleteButton = createElement('button', {
+            className: 'text-red-600 hover:text-red-800 hover:bg-red-50 px-2 rounded dark:text-red-400 dark:hover:bg-red-900/30',
+            onClick: () => {
+              state.karmaList = state.karmaList.filter((_, i) => i !== index);
+              renderApp();
+            }
+          }, 'Sil');
+          karmaItem.appendChild(deleteButton);
+          
+          karmaListContainer.appendChild(karmaItem);
+        });
+        
+        karmaForm.appendChild(karmaListContainer);
+      }
+      
+      // Create and add the karma form card
+      const karmaFormCard = createCard('Karma Alan Tanımlama', karmaForm);
+      container.appendChild(karmaFormCard);
+      
+      // Hesapla ve Dosya Yükleme Card
+      const actionCardContent = createElement('div');
+      
+      const hesaplaButton = createElement('button', {
+        className: 'w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 sm:py-2 px-4 rounded-md shadow-md hover:shadow-lg transition-all text-base sm:text-base',
+        onClick: calculate
+      }, 'Hesapla');
+      
+      actionCardContent.appendChild(hesaplaButton);
+      
+      const fileUploadSection = createElement('div', {
+        className: 'mt-4 border-t pt-4'
+      });
+      
+      fileUploadSection.appendChild(createLabel('Görsel/PDF Yükleme'));
+      
+      const fileInputContainer = createElement('div', {
+        className: 'flex items-center gap-4'
+      });
+      
+      // Create a file drop zone wrapper
+      const dropZone = createElement('div', {
+        className: 'border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 w-full text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200',
+        onClick: () => {
+          // Trigger file input click when the drop zone is clicked
+          fileInput.click();
+        },
+        onDragOver: (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.add('border-blue-500', 'dark:border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20');
+        },
+        onDragLeave: (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.remove('border-blue-500', 'dark:border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20');
+        },
+        onDrop: (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dropZone.classList.remove('border-blue-500', 'dark:border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20');
+          
+          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const file = e.dataTransfer.files[0];
+            if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+              state.files = [file];
+              renderApp();
+              showNotification('Dosya yüklendi', 'success');
+            }
+          }
+        }
+      });
+      
+      // Hidden file input
+      const fileInput = createElement('input', {
+        type: 'file',
+        accept: 'image/*',
+        className: 'hidden',
+        onChange: handleFileUpload
+      });
+
+      const pdfInput = createElement('input', {
+        type: 'file',
+        accept: 'application/pdf',
+        className: 'hidden',
+        onChange: handleFileUpload
+      });
+      
+      // Icons and text for the drop zone
+      const dropZoneContent = createElement('div', {
+        className: 'flex flex-col items-center'
+      });
+      
+      // Upload icon SVG
+      const uploadIcon = createElement('svg', {
+        className: 'w-10 h-10 mb-2 text-gray-400 dark:text-gray-500',
+        fill: 'none',
+        viewBox: '0 0 24 24',
+        stroke: 'currentColor',
+        innerHTML: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />'
+      });
+      
+      const title = createElement('p', {
+        className: 'mb-1 text-sm font-semibold text-gray-700 dark:text-gray-300'
+      }, 'Dosya yüklemek için tıklayın veya sürükleyin');
+      
+      const subtitle = createElement('p', {
+        className: 'text-xs text-gray-500 dark:text-gray-400'
+      }, 'CTRL+V ile panodan yapıştırabilirsiniz');
+      
+      dropZoneContent.appendChild(uploadIcon);
+      dropZoneContent.appendChild(title);
+      dropZoneContent.appendChild(subtitle);
+
+      const pdfButton = createElement('button', {
+        type: 'button',
+        className: 'mt-2 text-xs text-blue-600 hover:text-blue-700 underline',
+        onClick: (e) => {
+          e.stopPropagation();
+          pdfInput.click();
+        }
+      }, 'PDF sec');
+      dropZoneContent.appendChild(pdfButton);
+      
+      // If there's a file already uploaded, show its information
+      if (state.files.length > 0) {
+        const fileInfo = createElement('div', {
+          className: 'mt-3 py-2 px-3 bg-gray-100 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600 text-sm flex items-center'
+        });
+        
+        const fileIcon = createElement('svg', {
+          className: 'w-5 h-5 mr-2 text-blue-500 dark:text-blue-400',
+          fill: 'none',
+          viewBox: '0 0 24 24',
+          stroke: 'currentColor',
+          innerHTML: state.files[0].type.startsWith('image/') 
+            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />'
+            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />'
+        });
+        
+        const fileName = createElement('span', {
+          className: 'flex-1 truncate'
+        }, state.files[0].name);
+        
+        const clearButton = createElement('button', {
+          className: 'ml-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 focus:outline-none',
+          onClick: (e) => {
+            e.stopPropagation(); // Prevent triggering the drop zone click
+            state.files = [];
+            renderApp();
+          }
+        }, 'Sil');
+        
+        fileInfo.appendChild(fileIcon);
+        fileInfo.appendChild(fileName);
+        fileInfo.appendChild(clearButton);
+        
+        dropZoneContent.appendChild(fileInfo);
+      }
+      
+      dropZone.appendChild(dropZoneContent);
+      dropZone.appendChild(fileInput);
+      dropZone.appendChild(pdfInput);
+      fileInputContainer.appendChild(dropZone);
+      
+      fileUploadSection.appendChild(fileInputContainer);
+      
+      actionCardContent.appendChild(fileUploadSection);
+      
+      // Veri Saklama Bilgisi
+      const dataInfo = createElement('div', {
+        className: 'mt-4 border-t pt-4 text-center text-sm text-sky-600 dark:text-sky-400'
+      }, '✓ Verileriniz tarayıcınızda otomatik olarak kaydedilir.');
+      actionCardContent.appendChild(dataInfo);
+      
+      const actionCard = createCard(null, actionCardContent);
+      
+      // Add the stretched action card to span 2 columns
+      actionCard.className += ' col-span-1 md:col-span-2';
+      container.appendChild(actionCard);
+      
+      return container;
+    }
+    
+    function renderResultsTab() {
+      const container = createElement('div', {
+        className: 'grid grid-cols-1 md:grid-cols-2 gap-4'
+      });
+
+      // If there are selected alternatives
+      if (state.finalAlternatives?.length > 0) {
+        const buttonsContainer = createElement('div', {
+          className: 'flex flex-col sm:flex-row gap-2 mt-4'
+        });
+
+        buttonsContainer.appendChild(createElement('button', {
+          className: 'flex-1 bg-success-600 hover:bg-success-700 text-white font-medium py-3 px-4 rounded-md shadow-md hover:shadow-lg transition-all text-sm sm:text-base',
+          onClick: saveProcess
+        }, '💾 İşlem Olarak Kaydet'));
+
+        buttonsContainer.appendChild(createElement('button', {
+          className: 'flex-1 bg-anthracite-600 hover:bg-anthracite-700 text-white font-medium py-3 px-4 rounded-md shadow-md hover:shadow-lg transition-all text-sm sm:text-base',
+          onClick: printResults
+        }, '🖨️ Yazdır / PDF'));
+
+        const selectedAltCard = createCard(null, [
+          renderSelectedAlternatives(),
+          buttonsContainer
+        ]);
+
+        selectedAltCard.className += ' col-span-1 md:col-span-2';
+        container.appendChild(selectedAltCard);
+      }
+      
+      if (state.result) {
+        // Results card
+        const resultsCard = createCard('Sonuçlar', renderResultsSection());
+        container.appendChild(resultsCard);
+        
+        // Alternatives card if there are any
+        if (state.result.alternatives?.length > 0) {
+          const alternativesCard = createCard('Olası Alternatifler', renderAlternativesSection());
+          container.appendChild(alternativesCard);
+        }
+      } else {
+        // No results yet
+        const noResultsCard = createCard(null, 
+          createElement('p', {}, 'Henüz hesaplama yapılmadı. Lütfen hesapla butonuna basınız.')
+        );
+        noResultsCard.className += ' col-span-1 md:col-span-2';
+        container.appendChild(noResultsCard);
+      }
+      
+      return container;
+    }
+    
+    function renderResultsSection() {
+      if (!state.result) return null;
+      
+      const container = createElement('div', {
+        className: 'bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border dark:border-gray-600 overflow-x-auto'
+      });
+      
+      const title = createElement('h3', {
+        className: 'font-semibold mb-3'
+      }, 'Genel Bilgiler');
+      container.appendChild(title);
+      
+      const table = createElement('table', {
+        className: 'w-full'
+      });
+      
+      const tbody = createElement('tbody');
+      
+      // Add rows
+      const createRow = (label, value) => {
+        const row = createElement('tr', {
+          className: 'border-b dark:border-gray-600'
+        });
+        
+        const labelCell = createElement('td', {
+          className: 'py-2 font-medium'
+        }, label);
+        row.appendChild(labelCell);
+        
+        const valueCell = createElement('td', {
+          className: 'py-2 text-right'
+        }, value);
+        row.appendChild(valueCell);
+        
+        return row;
+      };
+      
+      tbody.appendChild(createRow('Kullanılan Emsal', state.result.usedEmsal.toFixed(2)));
+      tbody.appendChild(createRow('Toplam İnşaat Alanı', `${state.result.totalArea.toFixed(2)} m²`));
+      
+      // Show karma areas if exist
+      if (state.karmaList.length > 0) {
+        const totalKarmaNet = state.karmaList.reduce((a, k) => a + k.netAlanTotal, 0);
+        tbody.appendChild(createRow('Toplam Karma Alan (Net)', `${totalKarmaNet.toFixed(2)} m²`));
+        tbody.appendChild(createRow('Kalan Alan (Net)', `${state.result.remainingNetArea.toFixed(2)} m²`));
+        tbody.appendChild(createRow('Kalan Alan (Brüt)', `${state.result.remainingBrutArea.toFixed(2)} m²`));
+      }
+      
+      tbody.appendChild(createRow('Kat Başına Alan', `${state.result.floorArea.toFixed(2)} m²`));
+      
+      table.appendChild(tbody);
+      container.appendChild(table);
+      
+      return container;
+    }
+    
+    function renderAlternativesSection() {
+      if (!state.result?.alternatives) return null;
+
+      const container = createElement('div');
+
+      // Show Selected Button at the top
+      const showSelectedButton = createElement('button', {
+        className: 'w-full mb-4 bg-success-600 hover:bg-success-700 text-white font-medium py-3 px-4 rounded-md shadow-md hover:shadow-lg transition-all',
+        onClick: showSelectedAlternatives
+      }, '✓ Seçili Alternatifleri Görüntüle');
+      container.appendChild(showSelectedButton);
+
+      // Color legend container
+      const legendContainer = createElement('div', {
+        className: 'mb-3 flex flex-wrap gap-2'
+      });
+      
+      // Daire tiplerine göre renk sınıfları
+      const typeColors = {
+        "1+1": "bg-pink-50 hover:bg-pink-100 dark:bg-pink-900/30 dark:hover:bg-pink-900/50 text-gray-800 dark:text-white",
+        "2+0": "bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-gray-800 dark:text-white",
+        "2+1": "bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 text-gray-800 dark:text-white",
+        "3+1": "bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 text-gray-800 dark:text-white",
+        "4+1": "bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-gray-800 dark:text-white",
+        "TİCARİ": "bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-gray-800 dark:text-white"
+      };
+      
+      // Create legend items
+      Object.entries(typeColors).forEach(([type, baseColor]) => {
+        const colorClasses = baseColor.split(' ');
+        const bgColorClass = colorClasses[0];
+        const legendItem = createElement('div', {
+          className: `px-3 py-1 rounded-full text-xs font-medium ${bgColorClass} ${baseColor} border border-gray-200 dark:border-gray-500`
+        }, type);
+        legendContainer.appendChild(legendItem);
+      });
+      
+      container.appendChild(legendContainer);
+      
+      // Table container for overflow
+      const tableContainer = createElement('div', {
+        className: 'overflow-x-auto -mx-3 md:mx-0 px-3 md:px-0'
+      });
+      
+      // Create table
+      const table = createElement('table', {
+        className: 'w-full border-collapse text-xs sm:text-sm'
+      });
+      
+      // Table header
+      const thead = createElement('thead');
+      const headerRow = createElement('tr', {
+        className: 'bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600 text-gray-700 dark:text-gray-200'
+      });
+      
+      // Add headers
+      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 w-10' }, ''));
+      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-gray-700 dark:text-gray-200' }, 'Daire Tipi'));
+      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-gray-700 dark:text-gray-200' }, 'Toplam Daire'));
+      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-gray-700 dark:text-gray-200' }, 'Kat Başına'));
+      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-gray-700 dark:text-gray-200' }, 'Net (m²)'));
+      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-gray-700 dark:text-gray-200' }, 'Brüt (m²)'));
+      
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+      
+      // Table body
+      const tbody = createElement('tbody');
+      
+      // Create rows for each alternative
+      state.result.alternatives.forEach((alt, i) => {
+        const allColorClasses = typeColors[alt.type];
+        
+        const row = createElement('tr', {
+          className: `border-b dark:border-gray-600 ${allColorClasses} cursor-pointer text-gray-700 dark:text-gray-100`,
+          onClick: () => toggleAlternativeSelection(i)
+        });
+        
+        // Checkbox cell
+        const checkCell = createElement('td', { className: 'px-2 py-1 text-center' });
+        const checkbox = createElement('input', {
+          type: 'checkbox',
+          className: 'cursor-pointer w-4 h-4',
+          checked: state.selectedAltIndexes.includes(i),
+          onClick: (e) => e.stopPropagation(),
+          onChange: () => toggleAlternativeSelection(i)
+        });
+        checkCell.appendChild(checkbox);
+        row.appendChild(checkCell);
+        
+        // Data cells
+        row.appendChild(createElement('td', { className: 'px-2 py-1 font-medium text-gray-800 dark:text-gray-100' }, alt.type));
+        row.appendChild(createElement('td', { className: 'px-2 py-1 text-gray-800 dark:text-gray-100' }, alt.totalUnits));
+        row.appendChild(createElement('td', { className: 'px-2 py-1 text-gray-800 dark:text-gray-100' }, alt.unitsPerFloor));
+        row.appendChild(createElement('td', { className: 'px-2 py-1 text-gray-800 dark:text-gray-100' }, alt.netArea));
+        row.appendChild(createElement('td', { className: 'px-2 py-1 text-gray-800 dark:text-gray-100' }, alt.brutArea));
+        
+        tbody.appendChild(row);
+      });
+      
+      table.appendChild(tbody);
+      tableContainer.appendChild(table);
+      container.appendChild(tableContainer);
+
+      return container;
+    }
+    
+    function renderSelectedAlternatives() {
+      if (!state.finalAlternatives) return null;
+      
+      const container = createElement('div');
+      
+      const title = createElement('h3', {
+        className: 'text-xl font-bold mb-4 text-gray-900 dark:text-white'
+      }, 'Seçilen Alternatifler');
+      container.appendChild(title);
+      
+      // Kat Sayısı Input Group
+      const katInputGroup = createElement('div', {
+        className: 'flex items-center mb-4'
+      });
+      
+      katInputGroup.appendChild(createLabel('Kat Sayısını Girin'));
+      
+      const katInputContainer = createElement('div', {
+        className: 'ml-2 w-24'
+      });
+      
+      const katInput = createElement('input', {
+        type: 'number',
+        min: '1',
+        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+        value: state.kat,
+        onChange: e => {
+          state.kat = e.target.value;
+          renderApp();
+        }
+      });
+      
+      katInputContainer.appendChild(katInput);
+      katInputGroup.appendChild(katInputContainer);
+      container.appendChild(katInputGroup);
+      
+      // Table container
+      const tableContainer = createElement('div', {
+        className: 'overflow-x-auto mb-4'
+      });
+      
+      // Create table
+      const table = createElement('table', {
+        className: 'w-full border-collapse text-xs sm:text-sm'
+      });
+      
+      // Table header
+      const thead = createElement('thead');
+      const headerRow = createElement('tr', {
+        className: 'bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600 text-gray-700 dark:text-gray-200'
+      });
+      
+      // Add column headers based on visibility settings
+      if (!state.hiddenCols.alternative) {
+        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Alternatif'));
+      }
+      if (!state.hiddenCols.daireTipi) {
+        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Daire Tipi'));
+      }
+      if (!state.hiddenCols.toplamDaire) {
+        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Toplam Daire'));
+      }
+      if (!state.hiddenCols.katBasina) {
+        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Kat Başına'));
+      }
+      if (!state.hiddenCols.net) {
+        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Net (m²)'));
+      }
+      if (!state.hiddenCols.brut) {
+        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Brüt (m²)'));
+      }
+      
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+      
+      // Table body
+      const tbody = createElement('tbody');
+      
+      // Add table rows
+      state.finalAlternatives.forEach((alt, i) => {
+        const row = createElement('tr', {
+          className: 'border-b dark:border-gray-600 text-gray-700 dark:text-gray-100'
+        });
+        
+        // Add cells based on visibility settings
+        if (!state.hiddenCols.alternative) {
+          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, i + 1));
+        }
+        if (!state.hiddenCols.daireTipi) {
+          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, alt.type));
+        }
+        if (!state.hiddenCols.toplamDaire) {
+          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, alt.totalUnits));
+        }
+        if (!state.hiddenCols.katBasina) {
+          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, alt.unitsPerFloor));
+        }
+        if (!state.hiddenCols.net) {
+          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, alt.netArea));
+        }
+        if (!state.hiddenCols.brut) {
+          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, alt.brutArea));
+        }
+        
+        tbody.appendChild(row);
+      });
+      
+      table.appendChild(tbody);
+      tableContainer.appendChild(table);
+      container.appendChild(tableContainer);
+      
+      // Column visibility controls
+      const visibilityControls = createElement('div', {
+        className: 'flex flex-wrap gap-3 text-sm bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg'
+      });
+      
+      visibilityControls.appendChild(createElement('span', {
+        className: 'font-medium'
+      }, 'Sütunları Gizle/Göster:'));
+      
+      const checkboxContainer = createElement('div', {
+        className: 'flex flex-wrap gap-3'
+      });
+      
+      // Column toggle checkboxes
+      const createColumnToggle = (id, label) => {
+        const container = createElement('label', {
+          className: 'inline-flex items-center'
+        });
+        
+        const checkbox = createElement('input', {
+          type: 'checkbox',
+          className: 'mr-1',
+          checked: !state.hiddenCols[id],
+          onChange: () => {
+            state.hiddenCols[id] = !state.hiddenCols[id];
+            renderApp();
+          }
+        });
+        
+        container.appendChild(checkbox);
+        container.appendChild(document.createTextNode(label));
+        
+        return container;
+      };
+      
+      checkboxContainer.appendChild(createColumnToggle('alternative', 'Alternatif'));
+      checkboxContainer.appendChild(createColumnToggle('daireTipi', 'Daire Tipi'));
+      checkboxContainer.appendChild(createColumnToggle('toplamDaire', 'Toplam Daire'));
+      checkboxContainer.appendChild(createColumnToggle('katBasina', 'Kat Başına'));
+      checkboxContainer.appendChild(createColumnToggle('net', 'Net (m²)'));
+      checkboxContainer.appendChild(createColumnToggle('brut', 'Brüt (m²)'));
+      
+      visibilityControls.appendChild(checkboxContainer);
+      container.appendChild(visibilityControls);
+      
+      return container;
+    }
+    
+    // Tema renkleri tanımları
+    const historyThemes = {
+      blue: {
+        bg: 'bg-blue-50 dark:bg-blue-900/20',
+        border: 'border-blue-200 dark:border-blue-700',
+        title: 'text-blue-800 dark:text-blue-200',
+        text: 'text-blue-900 dark:text-blue-100',
+        button: 'bg-blue-600 hover:bg-blue-700',
+        accent: 'border-blue-400'
+      },
+      green: {
+        bg: 'bg-green-50 dark:bg-green-900/20',
+        border: 'border-green-200 dark:border-green-700',
+        title: 'text-green-800 dark:text-green-200',
+        text: 'text-green-900 dark:text-green-100',
+        button: 'bg-green-600 hover:bg-green-700',
+        accent: 'border-green-400'
+      },
+      purple: {
+        bg: 'bg-purple-50 dark:bg-purple-900/20',
+        border: 'border-purple-200 dark:border-purple-700',
+        title: 'text-purple-800 dark:text-purple-200',
+        text: 'text-purple-900 dark:text-purple-100',
+        button: 'bg-purple-600 hover:bg-purple-700',
+        accent: 'border-purple-400'
+      },
+      orange: {
+        bg: 'bg-orange-50 dark:bg-orange-900/20',
+        border: 'border-orange-200 dark:border-orange-700',
+        title: 'text-orange-800 dark:text-orange-200',
+        text: 'text-orange-900 dark:text-orange-100',
+        button: 'bg-orange-600 hover:bg-orange-700',
+        accent: 'border-orange-400'
+      },
+      red: {
+        bg: 'bg-red-50 dark:bg-red-900/20',
+        border: 'border-red-200 dark:border-red-700',
+        title: 'text-red-800 dark:text-red-200',
+        text: 'text-red-900 dark:text-red-100',
+        button: 'bg-red-600 hover:bg-red-700',
+        accent: 'border-red-400'
+      }
+    };
+
+    function renderHistoryTab() {
+      // Ensure history is synced with processHistoryData
+      state.history = getProcessHistory();
+      
+      const container = createElement('div', {
+        className: 'mt-4'
+      });
+      
+      if (state.history.length === 0) {
+        const emptyCard = createCard(null, 
+          createElement('p', {
+            className: 'text-center py-4'
+          }, 'Henüz kaydedilmiş işlem bulunmamaktadır.')
+        );
+        container.appendChild(emptyCard);
+        return container;
+      }
+      
+      const currentTheme = historyThemes[state.historyTheme] || historyThemes.blue;
+      
+      // History header
+      const historyHeader = createElement('div', {
+        className: 'flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3'
+      });
+
+      const titleRow = createElement('div', {
+        className: 'flex flex-col sm:flex-row items-start sm:items-center gap-3'
+      });
+
+      const title = createElement('h2', {
+        className: 'text-2xl font-bold text-gray-900 dark:text-gray-100'
+      }, 'Kayıtlı İşlemler');
+      titleRow.appendChild(title);
+
+      // Tema seçici
+      const themeSelector = createElement('div', {
+        className: 'flex items-center gap-2'
+      });
+
+      const themeLabel = createElement('span', {
+        className: 'text-sm font-medium text-gray-700 dark:text-gray-300'
+      }, 'Tema:');
+      themeSelector.appendChild(themeLabel);
+
+      const themeButtons = createElement('div', {
+        className: 'flex gap-1'
+      });
+
+      const themeColors = {
+        blue: 'bg-blue-500',
+        green: 'bg-green-500',
+        purple: 'bg-purple-500',
+        orange: 'bg-orange-500',
+        red: 'bg-red-500'
+      };
+
+      Object.keys(historyThemes).forEach(themeKey => {
+        const themeButton = createElement('button', {
+          className: `w-8 h-8 rounded-full border-2 transition-all ${
+            state.historyTheme === themeKey 
+              ? `${themeColors[themeKey]} border-white dark:border-gray-800 shadow-lg scale-110 ring-2 ring-offset-2 ring-opacity-50` 
+              : `${themeColors[themeKey]} opacity-60 hover:opacity-100 border-transparent hover:scale-105`
+          }`,
+          title: themeKey.charAt(0).toUpperCase() + themeKey.slice(1),
+          onClick: () => {
+            state.historyTheme = themeKey;
+            saveToStorage();
+            renderApp();
+          }
+        });
+        themeButtons.appendChild(themeButton);
+      });
+
+      themeSelector.appendChild(themeButtons);
+      titleRow.appendChild(themeSelector);
+      historyHeader.appendChild(titleRow);
+
+      // Action buttons container
+      const actionButtons = createElement('div', {
+        className: 'grid grid-cols-3 gap-2 w-full sm:flex sm:flex-wrap sm:gap-2 sm:w-auto'
+      });
+
+      // Export button
+      const exportButton = createElement('button', {
+        className: 'text-anthracite-700 hover:text-white font-medium text-sm px-4 py-2 rounded-lg bg-anthracite-100 hover:bg-anthracite-600 transition-all duration-200 dark:text-anthracite-200 dark:bg-anthracite-700 dark:hover:bg-anthracite-600 border border-anthracite-400',
+        onClick: exportData
+      }, '📥 Dışa Aktar');
+      actionButtons.appendChild(exportButton);
+
+      // Import button (with hidden file input)
+      const importFileInput = createElement('input', {
+        type: 'file',
+        accept: 'application/json',
+        className: 'hidden',
+        onChange: importData
+      });
+
+      const importButton = createElement('button', {
+        className: 'text-success-700 hover:text-white font-medium text-sm px-4 py-2 rounded-lg bg-success-100 hover:bg-success-600 transition-all duration-200 dark:text-success-200 dark:bg-success-800 dark:hover:bg-success-600 border border-success-400',
+        onClick: () => importFileInput.click()
+      }, '📤 İçe Aktar');
+      actionButtons.appendChild(importButton);
+      actionButtons.appendChild(importFileInput);
+
+      // Clear history button
+      const clearButton = createElement('button', {
+        className: 'text-primary-700 hover:text-white font-medium text-sm px-4 py-2 rounded-lg bg-primary-100 hover:bg-primary-600 transition-all duration-200 dark:text-primary-200 dark:bg-primary-800 dark:hover:bg-primary-600 border border-primary-400',
+        onClick: clearHistory
+      }, '🗑️ Geçmişi Temizle');
+      actionButtons.appendChild(clearButton);
+
+      historyHeader.appendChild(actionButtons);
+      container.appendChild(historyHeader);
+      
+      // Split pane container - responsive
+      const isMobile = window.innerWidth < 768;
+      const splitContainer = createElement('div', {
+        className: isMobile ? 'flex flex-col gap-4' : 'split-pane-container',
+        style: isMobile ? { width: '100%' } : {
+          width: state.containerDimensions.width,
+          height: state.containerDimensions.height
+        }
+      });
+
+      // Left panel (Image container)
+      const leftPanel = createElement('div', {
+        className: isMobile ? 'w-full' : 'split-pane-item',
+        style: isMobile ? {} : { width: '50%', padding: '12px', borderRight: '2px solid #eaeaea' }
+      });
+
+      const imagePanel = createElement('div', {
+        className: `bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600 ${isMobile ? 'h-64 min-h-64' : 'h-full'}`
+      });
+      
+      // If there's an image, display it; otherwise show placeholder
+      if (state.history[0]?.image) {
+        const imageType = state.history[0].image.startsWith('data:application/pdf') ? 'pdf' : 'image';
+        
+        if (imageType === 'pdf') {
+          const pdfContainer = createElement('div', {
+            className: 'w-full h-full flex flex-col',
+            style: {
+              position: 'relative',
+              overflow: 'hidden'
+            }
+          });
+          
+          // PDF wrapper with overflow control for dragging
+          const pdfWrapper = createElement('div', {
+            className: 'flex-1 w-full overflow-auto',
+            style: {
+              position: 'relative'
+            }
+          });
+          
+          const pdfContent = createElement('div', {
+            style: {
+              transform: `scale(${state.zoom / 100})`,
+              transformOrigin: 'top left',
+              transition: 'transform 0.1s ease-out',
+              width: state.zoom > 100 ? `${state.zoom}%` : '100%',
+              height: state.zoom > 100 ? `${state.zoom}%` : '100%',
+              position: 'relative'
+            }
+          });
+          
+          const iframe = createElement('iframe', {
+            src: `${state.history[0].image}#toolbar=0&view=FitH`,
+            type: 'application/pdf',
+            className: 'w-full',
+            style: {
+              border: 'none',
+              width: '100%',
+              height: '100vh',
+              display: 'block',
+              background: 'white'
+            }
+          });
+          
+          pdfContent.appendChild(iframe);
+          pdfWrapper.appendChild(pdfContent);
+          pdfContainer.appendChild(pdfWrapper);
+          
+          // Make PDF wrapper draggable
+          setupDraggable(pdfWrapper);
+          
+          imagePanel.appendChild(pdfContainer);
+          
+        } else {
+          const imageContainer = createElement('div', {
+            className: 'image-container h-full w-full overflow-auto'
+          });
+          
+          const imageContent = createElement('div', {
+            className: 'image-content',
+            style: {
+              transform: `scale(${state.zoom / 100})`,
+              transformOrigin: 'top left',
+              transition: 'transform 0.1s ease-out'
+            }
+          });
+          
+          const img = createElement('img', {
+            src: state.history[0].image,
+            alt: 'Kaydedilmiş görsel',
+            className: 'max-w-none',
+            style: {
+              display: 'block',
+              margin: '0 auto'
+            }
+          });
+          
+          imageContent.appendChild(img);
+          imageContainer.appendChild(imageContent);
+          
+          // Make image container draggable
+          setupDraggable(imageContainer);
+          
+          imagePanel.appendChild(imageContainer);
+        }
+      } else {
+        // No image placeholder
+        const placeholder = createElement('div', {
+          className: 'text-center p-4 h-full flex items-center justify-center'
+        });
+        
+        const placeholderContent = createElement('div');
+        
+        const placeholderIcon = createElement('svg', {
+          className: 'mx-auto h-12 w-12 text-gray-400',
+          fill: 'none',
+          viewBox: '0 0 24 24',
+          stroke: 'currentColor',
+          innerHTML: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />'
+        });
+        
+        const placeholderText = createElement('p', {
+          className: 'mt-2 text-sm text-gray-500'
+        }, 'Görsel yok');
+        
+        placeholderContent.appendChild(placeholderIcon);
+        placeholderContent.appendChild(placeholderText);
+        placeholder.appendChild(placeholderContent);
+        
+        imagePanel.appendChild(placeholder);
+      }
+      
+      leftPanel.appendChild(imagePanel);
+      
+      // Right panel (History entries)
+      const rightPanel = createElement('div', {
+        className: isMobile ? 'w-full' : 'split-pane-item',
+        style: isMobile ? {} : { width: '50%', padding: '12px', borderLeft: '2px solid #eaeaea' }
+      });
+
+      const entriesContainer = createElement('div', {
+        className: `space-y-4 overflow-y-auto ${isMobile ? 'max-h-96' : 'h-full'} p-3 md:p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg`
+      });
+      
+      // Render history entries
+      state.history.forEach((entry, index) => {
+        const historyEntry = createElement('div', {
+          className: `bg-white dark:bg-gray-800 rounded-lg shadow p-3 md:p-4 history-entry-${index} border-2 ${currentTheme.border} ${currentTheme.bg}`
+        });
+        
+        // Entry header with actions
+        const entryHeader = createElement('div', {
+          className: 'flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2'
+        });
+
+        // Title - editable when in edit mode
+        if (state.editingHistoryIndex === index) {
+          const titleInput = createElement('input', {
+            type: 'text',
+            id: `edit-title-${index}`,
+            className: `flex-1 mr-3 px-3 py-2 border-2 ${currentTheme.accent} ${currentTheme.bg} dark:bg-anthracite-700 rounded-lg font-semibold text-lg ${currentTheme.title} focus:ring-2 focus:ring-opacity-50`,
+            value: entry.title || `Alternatif ${index + 1}`,
+            placeholder: 'Başlık girin...'
+          });
+          entryHeader.appendChild(titleInput);
+        } else {
+          const entryTitle = createElement('h3', {
+            className: `font-semibold text-lg ${currentTheme.title}`
+          }, entry.title || `Alternatif ${index + 1}`);
+          entryHeader.appendChild(entryTitle);
+        }
+        
+        // Entry actions
+        const actions = createElement('div', {
+          className: 'flex flex-wrap gap-2 w-full sm:w-auto'
+        });
+        
+        // If editing this entry, show save/cancel buttons
+        if (state.editingHistoryIndex === index) {
+          const saveButton = createElement('button', {
+            className: 'p-1 hover:opacity-70 transition-all cursor-pointer',
+            onClick: () => saveHistoryEdit(index),
+            title: 'Kaydet'
+          });
+          saveButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+          actions.appendChild(saveButton);
+
+          const cancelButton = createElement('button', {
+            className: 'p-1 hover:opacity-70 transition-all cursor-pointer',
+            onClick: cancelHistoryEdit,
+            title: 'İptal'
+          });
+          cancelButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+          actions.appendChild(cancelButton);
+        } else {
+          // Otherwise show edit/delete/add image buttons
+          const editButton = createElement('button', {
+            className: 'p-1 hover:opacity-70 transition-all cursor-pointer',
+            onClick: () => startEditingHistory(index),
+            title: 'Düzenle'
+          });
+          editButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+          actions.appendChild(editButton);
+
+          // Add/Change Image button
+          const imageFileInput = createElement('input', {
+            type: 'file',
+            accept: 'image/*,application/pdf',
+            className: 'hidden',
+            onChange: (e) => {
+              if (e.target.files && e.target.files[0]) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                  state.history[index].image = evt.target.result;
+                  processHistoryData[index].image = evt.target.result;
+                  saveToStorage();
+                  renderApp();
+                  showNotification('Görsel güncellendi', 'success');
+                };
+                reader.readAsDataURL(file);
+              }
+            }
+          });
+
+          const imageButton = createElement('button', {
+            className: 'p-1 hover:opacity-70 transition-all cursor-pointer',
+            onClick: () => imageFileInput.click(),
+            title: entry.image ? 'Görseli Değiştir' : 'Görsel Ekle'
+          });
+          imageButton.innerHTML = entry.image 
+            ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>'
+            : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>';
+          actions.appendChild(imageFileInput);
+          actions.appendChild(imageButton);
+
+          const deleteButton = createElement('button', {
+            className: 'p-1 hover:opacity-70 transition-all cursor-pointer',
+            onClick: () => deleteHistoryEntry(index),
+            title: 'Sil'
+          });
+          deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
+          actions.appendChild(deleteButton);
+        }
+        
+        entryHeader.appendChild(actions);
+        historyEntry.appendChild(entryHeader);
+
+        // Entry content - inline editing
+        const contentContainer = createElement('div', {
+          className: 'mt-3'
+        });
+
+        if (state.editingHistoryIndex === index) {
+          // Edit mode - Direct inline textarea (NO BOX!)
+          let contentLines = [];
+          if (Array.isArray(entry.data)) {
+            contentLines = entry.data;
+          } else if (entry.data) {
+            contentLines = [String(entry.data)];
+          }
+
+          // Strip HTML tags from content for editing
+          const cleanContentLines = contentLines.map(line => {
+            // Create a temporary element to decode HTML
+            const temp = document.createElement('div');
+            temp.innerHTML = line;
+            return temp.textContent || temp.innerText || line;
+          });
+
+          const contentTextarea = createElement('textarea', {
+            id: `edit-content-${index}`,
+            className: `w-full px-3 py-2 border-2 ${currentTheme.accent} ${currentTheme.bg} dark:bg-anthracite-700 rounded-lg text-sm resize-y ${currentTheme.text} focus:outline-none focus:ring-2 focus:ring-opacity-50`,
+            rows: 8,
+            value: cleanContentLines.join('\n'),
+            placeholder: 'Her satır bir alternatif...',
+            style: {
+              minHeight: '120px',
+              fontFamily: 'ui-monospace, monospace'
+            }
+          });
+          contentContainer.appendChild(contentTextarea);
+
+          // Image upload section in edit mode
+          const imageSection = createElement('div', {
+            className: 'mt-3 p-3 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg'
+          });
+
+          const imageLabel = createElement('p', {
+            className: 'text-sm font-medium mb-2 text-gray-700 dark:text-gray-300'
+          }, 'Görsel:');
+          imageSection.appendChild(imageLabel);
+
+          if (entry.image) {
+            const currentImageInfo = createElement('p', {
+              className: 'text-xs text-gray-600 dark:text-gray-400 mb-2'
+            }, '✓ Mevcut görsel var');
+            imageSection.appendChild(currentImageInfo);
+          }
+
+          const imageEditInput = createElement('input', {
+            type: 'file',
+            accept: 'image/*,application/pdf',
+            id: `edit-image-${index}`,
+            className: 'hidden'
+          });
+
+          const imageUploadButton = createElement('button', {
+            type: 'button',
+            className: 'px-3 py-2 bg-anthracite-600 hover:bg-anthracite-700 text-white text-sm rounded-md transition-all shadow-md',
+            onClick: () => imageEditInput.click()
+          }, entry.image ? '🖼️' : '📷');
+
+          imageSection.appendChild(imageEditInput);
+          imageSection.appendChild(imageUploadButton);
+          contentContainer.appendChild(imageSection);
+
+          // Help text
+          const helpText = createElement('p', {
+            className: 'text-xs text-success-700 dark:text-success-400 mt-2'
+          }, '💡 Her satır ayrı gösterilir');
+          contentContainer.appendChild(helpText);
+
+        } else {
+          // Display mode - Clean paragraphs
+          const displayContainer = createElement('div', {
+            className: 'space-y-1'
+          });
+
+          let displayData = entry.data;
+          if (!displayData) displayData = [""];
+          if (!Array.isArray(displayData)) displayData = [String(displayData)];
+
+          displayData.forEach((line, lineIndex) => {
+            if (!line || line.trim() === '') {
+              displayContainer.appendChild(createElement('div', { className: 'h-2' }));
+            } else {
+              const paragraph = createElement('p', {
+                className: `${currentTheme.text} text-sm leading-relaxed`
+              });
+              // Decode HTML entities for display
+              const temp = document.createElement('div');
+              temp.innerHTML = line;
+              paragraph.textContent = temp.textContent || temp.innerText || line;
+              displayContainer.appendChild(paragraph);
+            }
+          });
+
+          contentContainer.appendChild(displayContainer);
+        }
+
+        historyEntry.appendChild(contentContainer);
+        
+        entriesContainer.appendChild(historyEntry);
+      });
+      
+      rightPanel.appendChild(entriesContainer);
+      
+      // Add panels to container
+      splitContainer.appendChild(leftPanel);
+
+      // Only add divider and resize on desktop
+      if (!isMobile) {
+        // Divider for resizing
+        const divider = createElement('div', {
+          className: 'split-pane-divider',
+          style: { left: '50%' }
+        });
+        splitContainer.appendChild(divider);
+
+        splitContainer.appendChild(rightPanel);
+
+        // Add resize handle to the container
+        const resizeHandle = createElement('div', {
+          className: 'resize-handle'
+        });
+        splitContainer.appendChild(resizeHandle);
+
+        // Setup resize handlers
+        setupResizeHandlers(splitContainer, leftPanel, rightPanel, divider, resizeHandle);
+      } else {
+        splitContainer.appendChild(rightPanel);
+      }
+
+      // Add split container to main container
+      container.appendChild(splitContainer);
+      
+      return container;
+    }
+    
+    // Setup handlers for resizing the split pane
+    function setupResizeHandlers(splitContainer, leftPanel, rightPanel, divider, resizeHandle) {
+      let isDragging = false;
+      let isResizing = false;
+      let initialWidth, initialHeight, initialX, initialY;
+      
+      divider.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isDragging = true;
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+      });
+      
+      resizeHandle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isResizing = true;
+        initialWidth = splitContainer.offsetWidth;
+        initialHeight = splitContainer.offsetHeight;
+        initialX = e.clientX;
+        initialY = e.clientY;
+        document.body.style.cursor = 'nwse-resize';
+        document.body.style.userSelect = 'none';
+      });
+      
+      document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          const containerRect = splitContainer.getBoundingClientRect();
+          const containerWidth = containerRect.width;
+          const offsetX = e.clientX - containerRect.left;
+          
+          // Calculate percentage (constrained between 20% and 80%)
+          let position = Math.min(Math.max((offsetX / containerWidth) * 100, 20), 80);
+          
+          // Update panel widths
+          leftPanel.style.width = `${position}%`;
+          rightPanel.style.width = `${100 - position}%`;
+          divider.style.left = `${position}%`;
+        }
+        
+        if (isResizing) {
+          // Calculate new dimensions
+          const deltaX = e.clientX - initialX;
+          const deltaY = e.clientY - initialY;
+          
+          // Constrain minimum size
+          const newWidth = Math.max(initialWidth + deltaX, 600);
+          const newHeight = Math.max(initialHeight + deltaY, 400);
+          
+          // Apply new dimensions
+          splitContainer.style.width = `${newWidth}px`;
+          splitContainer.style.height = `${newHeight}px`;
+          
+          // Save dimensions to state
+          state.containerDimensions.width = `${newWidth}px`;
+          state.containerDimensions.height = `${newHeight}px`;
+        }
+      });
+      
+      document.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+        }
+        
+        if (isResizing) {
+          isResizing = false;
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+        }
+      });
+    }
+    
+    // Action functions
+    function addKarma() {
+      if (!state.karmaData.netAlan || (state.karmaData.daireType !== "TİCARİ" && !state.karmaData.daireSayisi)) {
+        state.error = "Lütfen gerekli alanları doldurun";
+        renderApp();
+        return;
+      }
+
+      const entry = {
+        ...state.karmaData,
+        daireSayisi: state.karmaData.daireType === "TİCARİ" ? "1" : state.karmaData.daireSayisi,
+        brutAlan: calculateBrut(parseFloat(state.karmaData.netAlan)),
+        netAlanTotal: parseFloat(state.karmaData.netAlan) * (state.karmaData.daireType === "TİCARİ" ? 1 : parseFloat(state.karmaData.daireSayisi))
+      };
+
+      state.karmaList = [...state.karmaList, entry];
+      state.karmaData = { daireSayisi: "", netAlan: "", daireType: "3+1" };
+      state.karmaTypeTouched = false;
+      state.error = "";
+
+      saveToStorage(); // Auto-save
+      showNotification('Karma alan eklendi', 'success');
+      renderApp();
+    }
+    
+    function calculate() {
+      // Enhanced validation
+      const arsaAlani = parseFloat(state.mainInfo.arsaAlani);
+      const kaks = parseFloat(state.mainInfo.kaks);
+      const katSayisi = parseInt(state.mainInfo.katSayisi, 10);
+
+      // Check if fields are filled
+      if (!state.mainInfo.arsaAlani || !state.mainInfo.kaks || !state.mainInfo.katSayisi) {
+        state.error = "Lütfen tüm alanları doldurun";
+        renderApp();
+        showNotification('Lütfen tüm zorunlu alanları doldurun', 'error');
+        return;
+      }
+
+      // Validate numeric values
+      if (isNaN(arsaAlani) || arsaAlani <= 0) {
+        state.error = "Arsa alanı geçerli bir pozitif sayı olmalıdır";
+        renderApp();
+        showNotification('Geçersiz arsa alanı', 'error');
+        return;
+      }
+
+      if (isNaN(kaks) || kaks <= 0) {
+        state.error = "KAKS geçerli bir pozitif sayı olmalıdır";
+        renderApp();
+        showNotification('Geçersiz KAKS değeri', 'error');
+        return;
+      }
+
+      if (isNaN(katSayisi) || katSayisi < 1) {
+        state.error = "Kat sayısı en az 1 olmalıdır";
+        renderApp();
+        showNotification('Geçersiz kat sayısı', 'error');
+        return;
+      }
+
+      // Reasonable limits check
+      if (arsaAlani > 1000000) {
+        state.error = "Arsa alanı çok büyük görünüyor (max 1.000.000 m²)";
+        renderApp();
+        showNotification('Arsa alanı çok büyük', 'error');
+        return;
+      }
+
+      if (kaks > 10) {
+        state.error = "KAKS değeri çok yüksek görünüyor (max 10)";
+        renderApp();
+        showNotification('KAKS değeri çok yüksek', 'error');
+        return;
+      }
+
+      if (katSayisi > 100) {
+        state.error = "Kat sayısı çok yüksek görünüyor (max 100)";
+        renderApp();
+        showNotification('Kat sayısı çok yüksek', 'error');
+        return;
+      }
+
+      state.error = "";
+      state.selectedAltIndexes = [];
+      state.finalAlternatives = null;
+
+      try {
+        const ekl = kaks * C.SC;
+        const he = kaks + ekl * parseInt(state.mainInfo.carpanSayisi, 10);
+        const tot = arsaAlani * he;
+        const km = state.karmaList.reduce((sum, o) => sum + o.netAlanTotal, 0);
+        const rem = tot - km;
+        const kt = katSayisi;
+        state.kat = kt;
+
+        if (rem < 0) {
+          state.error = "Karma alan toplamı, toplam inşaat alanını aşıyor";
+          renderApp();
+          showNotification('Karma alan fazla', 'error');
+          return;
+        }
+
+        state.result = {
+          totalArea: tot,
+          remainingNetArea: rem,
+          remainingBrutArea: rem * 1.18,
+          usedEmsal: he,
+          floorArea: tot / kt,
+          alternatives: calcAlternatives(rem, kt)
+        };
+
+        state.activeTab = 'results';
+        renderApp();
+        showNotification('Hesaplama tamamlandı', 'success');
+      } catch (e) {
+        console.error('Hesaplama hatası:', e);
+        state.error = "Hesaplama hatası: " + e.message;
+        renderApp();
+        showNotification('Hesaplama sırasında hata oluştu', 'error');
+      }
+    }
+    
+    function calcAlternatives(rem, kat) {
+      try {
+        const alts = [];
+        const maxUnits = Math.floor(rem / C.MIN);
+
+        if (maxUnits < 1 || kat < 1) {
+          console.warn('Geçersiz değerler: maxUnits:', maxUnits, 'kat:', kat);
+          return [];
+        }
+
+        for (let t = kat; t <= maxUnits; t += kat) {
+          const net = rem / t;
+          if (net >= C.MIN)
+            alts.push({
+              totalUnits: t,
+              unitsPerFloor: t / kat,
+              netArea: net.toFixed(2),
+              brutArea: calculateBrut(net),
+              type: getType(net)
+            });
+        }
+
+        return alts;
+      } catch (e) {
+        console.error('Alternatif hesaplama hatası:', e);
+        return [];
+      }
+    }
+    
+    function toggleAlternativeSelection(index) {
+      if (state.selectedAltIndexes.includes(index)) {
+        state.selectedAltIndexes = state.selectedAltIndexes.filter(i => i !== index);
+      } else {
+        state.selectedAltIndexes = [...state.selectedAltIndexes, index];
+      }
+      renderApp();
+    }
+    
+    function showSelectedAlternatives() {
+      if (!state.result?.alternatives) return;
+      
+      if (!state.selectedAltIndexes.length) {
+        state.error = "Lütfen en az bir alternatif seçin";
+        renderApp();
+        return;
+      }
+      
+      state.error = "";
+      state.finalAlternatives = state.result.alternatives.filter((_, i) => state.selectedAltIndexes.includes(i));
+      renderApp();
+    }
+    
+    function saveProcess() {
+      if (!state.finalAlternatives?.length) {
+        state.error = "Kaydedilecek bir alternatif yok!";
+        renderApp();
+        return;
+      }
+      
+      state.error = "";
+      const lines = state.finalAlternatives.map((alt, i) => formatAlternative(alt, i, state.kat, state.karmaList));
+      
+      // Ensure we have at least one line
+      if (!lines.length) {
+        lines.push("");
+      }
+      
+      const newEntryBase = { date: new Date().toLocaleString(), data: lines, kat: state.kat };
+      
+      if (state.files.length > 0) {
+        const file = state.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+          const imageData = e.target.result;
+          const newEntry = { ...newEntryBase, image: imageData };
+          processHistoryData.push(newEntry);
+          state.history = getProcessHistory();
+          state.files = [];
+          saveToStorage();
+          renderApp();
+          
+          showNotification('İşlem kaydedildi', 'success');
+        };
+        
+        reader.readAsDataURL(file);
+      } else {
+        processHistoryData.push(newEntryBase);
+        state.history = getProcessHistory();
+        saveToStorage();
+        renderApp();
+        
+        showNotification('İşlem kaydedildi', 'success');
+      }
+    }
+    
+    function handleFileUpload(e) {
+      state.files = Array.from(e.target.files);
+      renderApp();
+    }
+    
+    function clearHistory() {
+      state.history = clearProcessHistory();
+      state.activeTab = 'form';
+      renderApp();
+      
+      showNotification('Geçmiş temizlendi', 'info');
+    }
+    
+    function deleteHistoryEntry(index) {
+      const updatedHistory = [...state.history];
+      updatedHistory.splice(index, 1);
+      processHistoryData = updatedHistory;
+      state.history = updatedHistory;
+
+      // If deleting the entry we're editing
+      if (state.editingHistoryIndex === index) {
+        state.editingHistoryIndex = -1;
+      }
+
+      saveToStorage(); // Save after delete
+      renderApp();
+      showNotification('Kayıt silindi', 'info');
+    }
+
+    // Export data as JSON
+    function exportData() {
+      try {
+        const dataToExport = {
+          version: '1.0',
+          exportDate: new Date().toISOString(),
+          history: processHistoryData,
+          mainInfo: state.mainInfo,
+          karmaList: state.karmaList
+        };
+
+        const jsonString = JSON.stringify(dataToExport, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `emsal-hesaplama-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+
+        showNotification('Veriler dışa aktarıldı', 'success');
+      } catch (e) {
+        console.error('Export hatası:', e);
+        showNotification('Dışa aktarma sırasında hata oluştu', 'error');
+      }
+    }
+
+    // Import data from JSON
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const importedData = JSON.parse(e.target.result);
+
+          // Validate imported data structure
+          if (!importedData.version) {
+            throw new Error('Geçersiz dosya formatı');
+          }
+
+          // Restore data
+          if (importedData.history) {
+            processHistoryData = importedData.history;
+            state.history = importedData.history;
+          }
+          if (importedData.mainInfo) {
+            state.mainInfo = importedData.mainInfo;
+          }
+          if (importedData.karmaList) {
+            state.karmaList = importedData.karmaList;
+          }
+
+          saveToStorage(); // Save imported data
+          renderApp();
+          showNotification('Veriler başarıyla içe aktarıldı', 'success');
+        } catch (error) {
+          console.error('Import hatası:', error);
+          showNotification('İçe aktarma hatası: ' + error.message, 'error');
+        }
+      };
+
+      reader.onerror = () => {
+        showNotification('Dosya okuma hatası', 'error');
+      };
+
+      reader.readAsText(file);
+    }
+
+    // Print/Export PDF functionality
+    function printResults() {
+      try {
+        // Create a print-friendly version
+        const printWindow = window.open('', '_blank');
+        const printContent = generatePrintContent();
+
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+
+        // Wait for content to load, then print
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+
+        showNotification('Yazdırma penceresi açılıyor...', 'info');
+      } catch (e) {
+        console.error('Print hatası:', e);
+        showNotification('Yazdırma sırasında hata oluştu', 'error');
+      }
+    }
+
+    // Generate print-friendly HTML content
+    function generatePrintContent() {
+      const now = new Date().toLocaleString('tr-TR');
+
+      let content = `
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Emsal Hesaplama Raporu</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { color: #333; border-bottom: 2px solid #5D5CDE; padding-bottom: 10px; }
+    h2 { color: #5D5CDE; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #5D5CDE; color: white; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    .info-box { background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 15px 0; }
+    .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+    @media print {
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Emsal Hesaplama Raporu (Byres)</h1>
+  <p class="footer">Rapor Tarihi: ${now}</p>
+`;
+
+      // Add main info
+      if (state.mainInfo.arsaAlani) {
+        content += `
+  <div class="info-box">
+    <h2>Ana Bilgiler</h2>
+    <table>
+      <tr><td><strong>Arsa Alanı</strong></td><td>${state.mainInfo.arsaAlani} m²</td></tr>
+      <tr><td><strong>KAKS (Baz Emsal)</strong></td><td>${state.mainInfo.kaks}</td></tr>
+      <tr><td><strong>Kat Sayısı</strong></td><td>${state.mainInfo.katSayisi}</td></tr>
+      <tr><td><strong>Çarpan Sayısı</strong></td><td>${state.mainInfo.carpanSayisi}</td></tr>
+    </table>
+  </div>
+`;
+      }
+
+      // Add karma list if exists
+      if (state.karmaList.length > 0) {
+        content += `
+  <div class="info-box">
+    <h2>Karma Alanlar</h2>
+    <table>
+      <thead>
+        <tr><th>Daire Tipi</th><th>Daire Sayısı</th><th>Net Alan (m²)</th><th>Brüt Alan (m²)</th></tr>
+      </thead>
+      <tbody>
+`;
+        state.karmaList.forEach(item => {
+          content += `        <tr><td>${item.daireType}</td><td>${item.daireSayisi}</td><td>${item.netAlan}</td><td>${item.brutAlan}</td></tr>\n`;
+        });
+        content += `
+      </tbody>
+    </table>
+  </div>
+`;
+      }
+
+      // Add results if exists
+      if (state.result) {
+        content += `
+  <div class="info-box">
+    <h2>Hesaplama Sonuçları</h2>
+    <table>
+      <tr><td><strong>Kullanılan Emsal</strong></td><td>${state.result.usedEmsal.toFixed(2)}</td></tr>
+      <tr><td><strong>Toplam İnşaat Alanı</strong></td><td>${state.result.totalArea.toFixed(2)} m²</td></tr>
+      <tr><td><strong>Kalan Alan (Net)</strong></td><td>${state.result.remainingNetArea.toFixed(2)} m²</td></tr>
+      <tr><td><strong>Kalan Alan (Brüt)</strong></td><td>${state.result.remainingBrutArea.toFixed(2)} m²</td></tr>
+      <tr><td><strong>Kat Başına Alan</strong></td><td>${state.result.floorArea.toFixed(2)} m²</td></tr>
+    </table>
+  </div>
+`;
+      }
+
+      // Add selected alternatives if exists
+      if (state.finalAlternatives && state.finalAlternatives.length > 0) {
+        content += `
+  <div class="info-box">
+    <h2>Seçilen Alternatifler (${state.kat} Kat İçin)</h2>
+    <table>
+      <thead>
+        <tr><th>Daire Tipi</th><th>Toplam Daire</th><th>Kat Başına</th><th>Net (m²)</th><th>Brüt (m²)</th></tr>
+      </thead>
+      <tbody>
+`;
+        state.finalAlternatives.forEach(alt => {
+          content += `        <tr><td>${alt.type}</td><td>${alt.totalUnits}</td><td>${alt.unitsPerFloor}</td><td>${alt.netArea}</td><td>${alt.brutArea}</td></tr>\n`;
+        });
+        content += `
+      </tbody>
+    </table>
+  </div>
+`;
+      }
+
+      content += `
+  <p class="footer">Bu rapor Emsal Hesaplama (Byres) uygulaması ile oluşturulmuştur.</p>
+</body>
+</html>
+`;
+
+      return content;
+    }
+
+    // History editing functions
+    let editBackup = null;
+    
+    function startEditingHistory(index) {
+      // Önce backup al
+      editBackup = JSON.parse(JSON.stringify(state.history[index]));
+      
+      // Düzenleme moduna geç
+      state.editingHistoryIndex = index;
+      renderApp();
+    }
+    
+    function cancelHistoryEdit() {
+      // Backup'tan geri yükle
+      if (editBackup && state.editingHistoryIndex >= 0) {
+        state.history[state.editingHistoryIndex] = editBackup;
+      }
+      
+      // Düzenleme modundan çık
+      state.editingHistoryIndex = -1;
+      editBackup = null;
+      renderApp();
+    }
+    
+    function saveHistoryEdit(index) {
+      // Get title input, content textarea, and image input
+      const titleInput = document.getElementById(`edit-title-${index}`);
+      const contentTextarea = document.getElementById(`edit-content-${index}`);
+      const imageInput = document.getElementById(`edit-image-${index}`);
+
+      if (!titleInput || !contentTextarea) {
+        console.error('Edit inputs not found for index:', index);
+        cancelHistoryEdit();
+        return;
+      }
+
+      const updatedEntry = { ...state.history[index] };
+
+      // Update title
+      const titleValue = titleInput.value.trim();
+      updatedEntry.title = titleValue || `Alternatif ${index + 1}`;
+
+      // Update content (split by newlines) - Save as plain text
+      const contentValue = contentTextarea.value;
+      const contentLines = contentValue.split('\n').filter(line => line !== null && line !== undefined);
+
+      // Escape HTML to prevent XSS and save as plain text
+      const escapedLines = contentLines.map(line => {
+        return line
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      });
+
+      updatedEntry.data = escapedLines.length > 0 ? escapedLines : [''];
+
+      // Check if image was uploaded
+      if (imageInput && imageInput.files && imageInput.files[0]) {
+        const file = imageInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          updatedEntry.image = e.target.result;
+
+          // Update the history
+          state.history[index] = updatedEntry;
+          processHistoryData[index] = updatedEntry;
+          editBackup = null;
+
+          // Exit edit mode
+          state.editingHistoryIndex = -1;
+
+          saveToStorage(); // Save changes
+          renderApp();
+          showNotification('Kayıt ve görsel güncellendi', 'success');
+        };
+
+        reader.readAsDataURL(file);
+      } else {
+        // No new image, just save text changes
+        // Update the history
+        state.history[index] = updatedEntry;
+        processHistoryData[index] = updatedEntry;
+        editBackup = null;
+
+        // Exit edit mode
+        state.editingHistoryIndex = -1;
+
+        saveToStorage(); // Save changes
+        renderApp();
+        showNotification('Kayıt güncellendi', 'success');
+      }
+    }
+    
+    // Zoom controls
+    function handleZoomWheel(e) {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 10 : -10;
+        const newZoom = Math.max(50, Math.min(300, state.zoom + delta));
+        
+        if (newZoom !== state.zoom) {
+          state.zoom = newZoom;
+          updateZoomUI(e.currentTarget);
+        }
+      }
+    }
+    
+    // Update zoom UI without full re-render
+    function updateZoomUI(container) {
+      // Find content element to transform
+      let contentElement;
+      if (container.querySelector('.image-content')) {
+        contentElement = container.querySelector('.image-content');
+      } else {
+        // For PDF, the first child of the container is usually the content div
+        contentElement = container.firstElementChild;
+      }
+      
+      if (contentElement) {
+        // Update transform scale
+        contentElement.style.transform = `scale(${state.zoom / 100})`;
+        
+        // Update dimensions for zoom levels > 100%
+        if (state.zoom > 100) {
+          contentElement.style.width = `${state.zoom}%`;
+          contentElement.style.height = `${state.zoom}%`;
+        } else {
+          contentElement.style.width = '100%';
+          contentElement.style.height = '100%';
+        }
+      }
+      
+      // Show zoom controls
+      showZoomControlsTemporarily();
+    }
+    
+    // Show zoom controls temporarily
+    function showZoomControlsTemporarily() {
+      const zoomControlsElements = document.querySelectorAll('.zoom-controls');
+      zoomControlsElements.forEach(element => {
+        // Update zoom percentage text
+        const percentText = element.querySelector('span');
+        if (percentText) {
+          percentText.textContent = Math.round(state.zoom) + '%';
+        }
+        
+        // Show controls
+        element.classList.add('visible');
+        
+        // Hide after delay
+        clearTimeout(state.zoomControlsTimeout);
+        state.zoomControlsTimeout = setTimeout(() => {
+          element.classList.remove('visible');
+        }, 1500);
+      });
+    }
+    
+    // Reset zoom level
+    function resetZoom() {
+      state.zoom = 100;
+      
+      // Find all zoomable content and reset
+      document.querySelectorAll('.image-content, .flex-1.w-full.overflow-auto > div').forEach(contentElement => {
+        contentElement.style.transform = 'scale(1)';
+        contentElement.style.width = '100%';
+        contentElement.style.height = '100%';
+      });
+      
+      showZoomControlsTemporarily();
+    }
+    
+    // Setup draggable container
+    function setupDraggable(container) {
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let scrollLeft = 0;
+      let scrollTop = 0;
+
+      // Touch gesture variables
+      let initialDistance = 0;
+      let initialZoom = 100;
+
+      container.style.cursor = 'grab';
+
+      // Mouse events
+      container.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.pageX - container.offsetLeft;
+        startY = e.pageY - container.offsetTop;
+        scrollLeft = container.scrollLeft;
+        scrollTop = container.scrollTop;
+        container.style.cursor = 'grabbing';
+      });
+
+      container.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - container.offsetLeft;
+        const y = e.pageY - container.offsetTop;
+        const walkX = (x - startX) * 1.5;
+        const walkY = (y - startY) * 1.5;
+        container.scrollLeft = scrollLeft - walkX;
+        container.scrollTop = scrollTop - walkY;
+      });
+
+      const stopDragging = () => {
+        isDragging = false;
+        container.style.cursor = 'grab';
+      };
+
+      container.addEventListener('mouseup', stopDragging);
+      container.addEventListener('mouseleave', stopDragging);
+
+      // Touch events for mobile
+      container.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          // Single touch - drag
+          isDragging = true;
+          const touch = e.touches[0];
+          startX = touch.pageX - container.offsetLeft;
+          startY = touch.pageY - container.offsetTop;
+          scrollLeft = container.scrollLeft;
+          scrollTop = container.scrollTop;
+        } else if (e.touches.length === 2) {
+          // Two fingers - prepare for pinch zoom
+          isDragging = false;
+          const touch1 = e.touches[0];
+          const touch2 = e.touches[1];
+          initialDistance = Math.hypot(
+            touch2.pageX - touch1.pageX,
+            touch2.pageY - touch1.pageY
+          );
+          initialZoom = state.zoom;
+        }
+      });
+
+      container.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && isDragging) {
+          // Single touch drag
+          e.preventDefault();
+          const touch = e.touches[0];
+          const x = touch.pageX - container.offsetLeft;
+          const y = touch.pageY - container.offsetTop;
+          const walkX = (x - startX) * 1.5;
+          const walkY = (y - startY) * 1.5;
+          container.scrollLeft = scrollLeft - walkX;
+          container.scrollTop = scrollTop - walkY;
+        } else if (e.touches.length === 2) {
+          // Pinch zoom
+          e.preventDefault();
+          const touch1 = e.touches[0];
+          const touch2 = e.touches[1];
+          const currentDistance = Math.hypot(
+            touch2.pageX - touch1.pageX,
+            touch2.pageY - touch1.pageY
+          );
+
+          // Calculate zoom based on pinch distance
+          const scale = currentDistance / initialDistance;
+          const newZoom = Math.min(Math.max(initialZoom * scale, 50), 300);
+
+          state.zoom = newZoom;
+          state.showZoomControls = true;
+          renderApp();
+        }
+      });
+
+      container.addEventListener('touchend', (e) => {
+        if (e.touches.length === 0) {
+          isDragging = false;
+          initialDistance = 0;
+        }
+      });
+
+      // Add zoom wheel event
+      container.addEventListener('wheel', handleZoomWheel);
+
+      return container;
+    }
+    
+    // Create zoom controls
+    function createZoomControls() {
+      const zoomControls = createElement('div', {
+        className: `zoom-controls ${state.showZoomControls ? 'visible' : ''}`
+      });
+      
+      zoomControls.appendChild(createElement('span', {}, Math.round(state.zoom) + '%'));
+      zoomControls.appendChild(createElement('button', {
+        className: 'zoom-reset',
+        onClick: resetZoom
+      }, 'Sıfırla'));
+      
+      return zoomControls;
+    }
+    
+    // Initialize the app
+    loadFromStorage(); // Load saved data on startup
+    renderApp();
+    
+    // Add document-level paste event listener for Ctrl+V functionality
+    document.addEventListener('paste', function(e) {
+      // Only handle paste if we're on the form tab
+      if (state.activeTab !== 'form') return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (e.clipboardData && e.clipboardData.items) {
+        const items = e.clipboardData.items;
+        
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf('image') !== -1) {
+            const file = items[i].getAsFile();
+            if (file) {
+              state.files = [file]; // Replace any existing files
+              showNotification('Görsel yapıştırıldı', 'success');
+              renderApp();
+              break;
+            }
+          } else if (items[i].type === 'application/pdf') {
+            const file = items[i].getAsFile();
+            if (file) {
+              state.files = [file]; // Replace any existing files
+              showNotification('PDF yapıştırıldı', 'success');
+              renderApp();
+              break;
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+
