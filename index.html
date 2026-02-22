@@ -4,44 +4,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-  <title>Emsal Hesaplama (Byres)</title>
+  <title>Emsal Hesaplama - Mimari Platform</title>
 
-  <!-- Favicon -->
   <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
-  <link rel="apple-touch-icon"
-    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2210%22 y=%2250%22 width=%2280%22 height=%2240%22 fill=%22%2364748B%22 rx=%224%22/><polygon points=%2250,10 10,50 90,50%22 fill=%22%23F97316%22/></svg>">
 
-  <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
 
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
   <style>
-    /* Add basic fallback styles in case Tailwind fails to load */
     body {
-      font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      font-family: 'Fira Sans', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .font-mono {
+      font-family: 'Fira Code', monospace;
     }
 
     .hidden {
       display: none !important;
     }
 
-    .text-red-500 {
-      color: #ef4444;
-    }
-
-    .bg-gray-50 {
-      background-color: #f9fafb;
-    }
-
-    /* Modern Scrollbar */
     ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
     }
 
     ::-webkit-scrollbar-track {
@@ -50,7 +41,7 @@
 
     ::-webkit-scrollbar-thumb {
       background: #cbd5e1;
-      border-radius: 4px;
+      border-radius: 3px;
     }
 
     .dark ::-webkit-scrollbar-thumb {
@@ -60,67 +51,95 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Mobile: prevent iOS zoom on input focus */
+    @media (max-width: 768px) {
+      input[type="text"],
+      input[type="number"],
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
+    }
+
+    /* Safe area insets for notched devices */
+    @supports (padding: env(safe-area-inset-bottom)) {
+      .bottom-nav-safe {
+        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+      }
+      .content-safe-bottom {
+        padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+      }
+    }
+
+    /* Bottom nav active indicator animation */
+    .nav-indicator {
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
   </style>
   <script>
-    // Suppress Tailwind CDN warning in console
-    window.tailwindConfig = {
-      corePlugins: {
-        preflight: true,
-      }
-    };
-
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Outfit', 'sans-serif'],
+            sans: ['Fira Sans', 'system-ui', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
           },
           colors: {
-            primary: {
-              DEFAULT: '#E11D48', /* Rose 600 - more vibrant premium red */
-              50: '#fff1f2',
-              100: '#ffe4e6',
-              200: '#fecdd3',
-              300: '#fda4af',
-              400: '#fb7185',
-              500: '#f43f5e',
-              600: '#e11d48',
-              700: '#be123c',
-              800: '#9f1239',
-              900: '#881337',
-            },
-            anthracite: {
-              DEFAULT: '#1E293B', /* Slate 800 - sleeker dark mode */
-              50: '#f8fafc',
-              100: '#f1f5f9',
-              200: '#e2e8f0',
-              300: '#cbd5e1',
-              400: '#94a3b8',
-              500: '#64748b',
+            brand: {
+              DEFAULT: '#64748B',
+              50: '#F8FAFC',
+              100: '#F1F5F9',
+              200: '#E2E8F0',
+              300: '#CBD5E1',
+              400: '#94A3B8',
+              500: '#64748B',
               600: '#475569',
               700: '#334155',
-              800: '#1e293b',
-              900: '#0f172a',
+              800: '#1E293B',
+              900: '#0F172A',
+              950: '#020617',
             },
-            success: {
-              DEFAULT: '#0284C7', /* Sky 600 */
-              50: '#f0f9ff',
-              100: '#e0f2fe',
-              200: '#bae6fd',
-              300: '#7dd3fc',
-              400: '#38bdf8',
-              500: '#0ea5e9',
-              600: '#0284c7',
-              700: '#0369a1',
-              800: '#075985',
-              900: '#0c4a6e',
+            accent: {
+              DEFAULT: '#F97316',
+              50: '#FFF7ED',
+              100: '#FFEDD5',
+              200: '#FED7AA',
+              300: '#FDBA74',
+              400: '#FB923C',
+              500: '#F97316',
+              600: '#EA580C',
+              700: '#C2410C',
+              800: '#9A3412',
+              900: '#7C2D12',
+            },
+            steel: {
+              DEFAULT: '#334155',
+              50: '#F8FAFC',
+              100: '#F1F5F9',
+              200: '#E2E8F0',
+              300: '#CBD5E1',
+              400: '#94A3B8',
+              500: '#64748B',
+              600: '#475569',
+              700: '#334155',
+              800: '#1E293B',
+              900: '#0F172A',
             },
           },
           boxShadow: {
-            'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
-            'soft-dark': '0 10px 40px -10px rgba(0,0,0,0.3)',
-            'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+            'panel': '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04)',
+            'panel-hover': '0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.06)',
+            'elevated': '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04)',
           }
         }
       }
@@ -128,32 +147,20 @@
   </script>
 </head>
 
-<body
-  class="bg-slate-50 dark:bg-slate-900 transition-colors duration-300 font-sans antialiased text-slate-800 dark:text-slate-200">
-  <div id="app"
-    class="w-full max-w-5xl mx-auto mt-2 sm:mt-6 px-3 sm:px-6 pb-6 sm:pb-12 text-slate-900 dark:text-slate-100"></div>
+<body class="bg-brand-50 dark:bg-brand-950 transition-colors duration-200 font-sans antialiased text-brand-700 dark:text-brand-300">
+
+  <div id="app" class="flex h-[100dvh] overflow-hidden"></div>
 
   <script>
-    // Detect dark mode preference
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       document.documentElement.classList.add('dark');
     }
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-      if (event.matches) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+      document.documentElement.classList[event.matches ? 'add' : 'remove']('dark');
     });
 
-    // Constants and helper functions
-    const C = {
-      SC: 0.1,
-      MIN: 30,
-      OPT: ["1+1", "2+0", "2+1", "3+1", "4+1", "TİCARİ"]
-    };
-
-    // Helper functions
+    // ─── CONSTANTS ───
+    const C = { SC: 0.1, MIN: 30, OPT: ["1+1", "2+0", "2+1", "3+1", "4+1", "TİCARİ"] };
     const roundToFive = num => Math.ceil(num / 5) * 5;
     const calculateBrut = net => roundToFive(net * 1.18 + 12);
     const getType = net =>
@@ -161,20 +168,14 @@
         ? net < 50 ? "1+1" : net < 78 ? "2+0" : net < 98 ? "2+1" : net < 150 ? "3+1" : "4+1"
         : "Geçersiz";
 
-    // Debounce function for performance optimization
     function debounce(func, wait) {
       let timeout;
-      return function executedFunction(...args) {
-        const later = () => {
-          clearTimeout(timeout);
-          func(...args);
-        };
+      return function (...args) {
         clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
+        timeout = setTimeout(() => func(...args), wait);
       };
     }
 
-    // Format alternative string
     const formatAlternative = (alt, i, k, arr) => {
       let s = `Alternatif ${i + 1}: (${k} kat) -- ${alt.brutArea} m² den ${alt.type}, ${alt.totalUnits} daire`;
       if (arr?.length)
@@ -185,16 +186,14 @@
               : `ve ${o.brutAlan} m² den ${o.daireType}, ${o.daireSayisi} daire çıkar`
           ).join(" ");
       s = s.trim();
-      if (!s.endsWith('çıkar')) {
-        s += ' çıkar';
-      }
+      if (!s.endsWith('çıkar')) s += ' çıkar';
       return s;
     };
 
-    // LocalStorage for persistent data storage
+    // ─── LOCAL STORAGE ───
     const STORAGE_KEY = 'emsalHesaplamaData';
     const STORAGE_MAX_HISTORY_ITEMS = 120;
-    const STORAGE_MAX_IMAGE_BYTES = 250 * 1024; // 250KB üstü görseller localStorage'a yazılmaz
+    const STORAGE_MAX_IMAGE_BYTES = 250 * 1024;
     let processHistoryData = [];
 
     const estimateDataUrlBytes = (dataUrl = '') => {
@@ -205,42 +204,27 @@
     };
 
     const compactHistoryForStorage = (history = []) => {
-      const limitedHistory = history.slice(-STORAGE_MAX_HISTORY_ITEMS);
-
-      return limitedHistory.map(entry => {
+      return history.slice(-STORAGE_MAX_HISTORY_ITEMS).map(entry => {
         if (!entry || typeof entry !== 'object') return entry;
-
-        const compactedEntry = { ...entry };
-
-        if (typeof compactedEntry.image === 'string' && compactedEntry.image.startsWith('data:')) {
-          const imageSize = estimateDataUrlBytes(compactedEntry.image);
-          if (imageSize > STORAGE_MAX_IMAGE_BYTES) {
-            delete compactedEntry.image;
-            compactedEntry.imageOmitted = true;
-          }
+        const c = { ...entry };
+        if (typeof c.image === 'string' && c.image.startsWith('data:') && estimateDataUrlBytes(c.image) > STORAGE_MAX_IMAGE_BYTES) {
+          delete c.image;
+          c.imageOmitted = true;
         }
-
-        return compactedEntry;
+        return c;
       });
     };
 
     const isQuotaExceededError = error =>
-      error && (
-        error.name === 'QuotaExceededError' ||
-        error.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
-        error.code === 22 ||
-        error.code === 1014
-      );
+      error && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED' || error.code === 22 || error.code === 1014);
 
-    // Load data from localStorage on startup
     const loadFromStorage = () => {
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
           processHistoryData = parsed.history || [];
-          state.history = [...processHistoryData]; // Sync state.history
-          // Restore other state if needed
+          state.history = [...processHistoryData];
           if (parsed.mainInfo) state.mainInfo = parsed.mainInfo;
           if (parsed.karmaList) state.karmaList = parsed.karmaList;
           if (parsed.historyTheme) state.historyTheme = parsed.historyTheme;
@@ -253,303 +237,143 @@
       return false;
     };
 
-    // Save data to localStorage
     const saveToStorage = () => {
       const buildPayload = history => ({
-        history,
-        mainInfo: state.mainInfo,
-        karmaList: state.karmaList,
-        historyTheme: state.historyTheme,
-        timestamp: new Date().toISOString()
+        history, mainInfo: state.mainInfo, karmaList: state.karmaList,
+        historyTheme: state.historyTheme, timestamp: new Date().toISOString()
       });
-
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(buildPayload(processHistoryData)));
         return true;
       } catch (e) {
         if (isQuotaExceededError(e)) {
           try {
-            const compactedHistory = compactHistoryForStorage(processHistoryData);
-            processHistoryData = compactedHistory;
-            state.history = [...compactedHistory];
-
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
-              ...buildPayload(compactedHistory),
-              storageCompacted: true
-            }));
-
-            showNotification('Depolama sınırı nedeniyle geçmiş veriler optimize edildi', 'info');
+            const compacted = compactHistoryForStorage(processHistoryData);
+            processHistoryData = compacted;
+            state.history = [...compacted];
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...buildPayload(compacted), storageCompacted: true }));
+            showNotification('Depolama optimize edildi', 'info');
             return true;
-          } catch (compactError) {
-            console.error('LocalStorage kompakt kaydetme hatası:', compactError);
-          }
+          } catch (_) { /* ignore */ }
         }
-
         console.error('LocalStorage kaydetme hatası:', e);
         showNotification('Veriler kaydedilirken hata oluştu', 'error');
         return false;
       }
     };
 
-    // Debounced version for auto-save (waits 500ms after last change)
     const debouncedSaveToStorage = debounce(saveToStorage, 500);
 
-    // History functions with localStorage integration
-    const saveProcessHistory = data => {
-      processHistoryData.push(data);
-      saveToStorage();
-      return [...processHistoryData];
-    };
+    const saveProcessHistory = data => { processHistoryData.push(data); saveToStorage(); return [...processHistoryData]; };
     const getProcessHistory = () => [...processHistoryData];
-    const clearProcessHistory = () => {
-      processHistoryData = [];
-      saveToStorage();
-      return [];
-    };
+    const clearProcessHistory = () => { processHistoryData = []; saveToStorage(); return []; };
 
-    // Form verilerini temizleme fonksiyonu
-    const clearFormData = () => {
-      // Custom onay kutusu oluştur
-      const overlay = createElement('div', {
-        className: 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50',
-        style: {
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999
-        },
-        onClick: (e) => {
-          // Overlay'e tıklanırsa kapat
-          if (e.target === overlay) {
-            closeModal();
-          }
-        }
-      });
-
-      let handleEsc;
-      const closeModal = () => {
-        overlay.remove();
-        if (handleEsc) {
-          document.removeEventListener('keydown', handleEsc);
-        }
-      };
-
-      const modal = createElement('div', {
-        className: 'bg-white dark:bg-anthracite-700 rounded-lg shadow-2xl p-6 max-w-sm mx-4',
-        style: {
-          backgroundColor: document.documentElement.classList.contains('dark') ? '#2d3436' : 'white',
-          borderRadius: '12px',
-          padding: '24px',
-          maxWidth: '320px',
-          margin: '0 16px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)'
-        }
-      });
-
-      const message = createElement('p', {
-        className: 'text-gray-800 dark:text-gray-100 text-center mb-6 text-base',
-        style: {
-          color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937',
-          textAlign: 'center',
-          marginBottom: '24px',
-          fontSize: '16px'
-        }
-      }, 'Tüm verileri temizlemek istediğinizden emin misiniz?');
-
-      const okButton = createElement('button', {
-        className: 'w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-6 rounded-lg transition-all shadow-md',
-        style: {
-          width: '100%',
-          backgroundColor: '#ef4444',
-          color: 'white',
-          fontWeight: 500,
-          padding: '12px 24px',
-          borderRadius: '8px',
-          border: 'none',
-          cursor: 'pointer',
-          transition: 'all 0.2s'
-        },
-        onClick: () => {
-          closeModal();
-          performClear();
-        }
-      }, 'OK');
-
-      okButton.addEventListener('mouseenter', () => {
-        okButton.style.backgroundColor = '#dc2626';
-      });
-      okButton.addEventListener('mouseleave', () => {
-        okButton.style.backgroundColor = '#ef4444';
-      });
-
-      modal.appendChild(message);
-      modal.appendChild(okButton);
-      overlay.appendChild(modal);
-      document.body.appendChild(overlay);
-
-      // ESC tuşu ile kapatma
-      handleEsc = (e) => {
-        if (e.key === 'Escape') {
-          closeModal();
-        }
-      };
-      document.addEventListener('keydown', handleEsc);
-    };
-
-    // Asıl temizleme işlemini yapan fonksiyon
-    const performClear = () => {
-      // Karma verilerini sıfırla
-      state.karmaData = {
-        daireSayisi: "",
-        netAlan: "",
-        daireType: "3+1"
-      };
-      state.karmaTypeTouched = false;
-      state.karmaList = [];
-
-      // Sonuçları temizle
-      state.result = null;
-      state.selectedAltIndexes = [];
-      state.finalAlternatives = null;
-      state.error = "";
-
-      // Kayıtları (history) temizle
-      processHistoryData = [];
-      state.history = [];
-
-      // Yüklenen dosyaları temizle
-      state.files = [];
-
-      // LocalStorage'ı güncelle
-      saveToStorage();
-
-      // Arayüzü yenile
-      renderApp();
-
-      // Bildirim göster
-      showNotification('Veriler temizlendi (ana bilgiler korundu)', 'success');
-    };
-
-    // Notification system
+    // ─── NOTIFICATION SYSTEM ───
     let notificationTimeout = null;
     const showNotification = (message, type = 'info') => {
-      if (notificationTimeout) {
-        clearTimeout(notificationTimeout);
-      }
+      if (notificationTimeout) clearTimeout(notificationTimeout);
+      const existing = document.getElementById('notification');
+      if (existing) existing.remove();
 
-      const existingNotification = document.getElementById('notification');
-      if (existingNotification) {
-        existingNotification.remove();
-      }
+      const colors = {
+        success: 'bg-emerald-500 text-white',
+        error: 'bg-red-500 text-white',
+        info: 'bg-brand-600 text-white'
+      };
 
-      let bgColor, textColor;
-
-      if (type === 'success') {
-        bgColor = 'bg-sky-50 dark:bg-sky-900/30';
-        textColor = 'text-sky-800 dark:text-sky-200';
-      } else if (type === 'error') {
-        bgColor = 'bg-red-50 dark:bg-red-900/30';
-        textColor = 'text-red-800 dark:text-red-200';
-      } else {
-        bgColor = 'bg-blue-50 dark:bg-blue-900/30';
-        textColor = 'text-blue-800 dark:text-blue-200';
-      }
-
+      const isMob = window.innerWidth < 768;
       const notification = document.createElement('div');
       notification.id = 'notification';
-      notification.className = `fixed bottom-4 right-4 z-50 p-4 rounded-lg shadow-lg border ${bgColor} ${textColor} transition-opacity duration-300`;
-      notification.textContent = message;
+      notification.className = `fixed z-50 rounded-lg shadow-elevated ${colors[type] || colors.info} font-medium transition-all duration-300 ease-out ${isMob ? 'bottom-16 left-3 right-3 px-4 py-2.5 text-xs text-center' : 'bottom-6 right-6 px-5 py-3 text-sm'}`;
       notification.style.opacity = '0';
-
+      notification.style.transform = 'translateY(12px)';
+      notification.textContent = message;
       document.body.appendChild(notification);
 
-      // Animate in
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         notification.style.opacity = '1';
-      }, 10);
+        notification.style.transform = 'translateY(0)';
+      });
 
-      // Auto-hide after 3 seconds
       notificationTimeout = setTimeout(() => {
         notification.style.opacity = '0';
-        setTimeout(() => {
-          notification.remove();
-        }, 300);
+        notification.style.transform = 'translateY(12px)';
+        setTimeout(() => notification.remove(), 300);
       }, 3000);
     };
 
-    // Utility functions
+    // ─── SVG ICONS ───
+    const icons = {
+      building: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/></svg>`,
+      calculator: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z"/></svg>`,
+      chartBar: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>`,
+      clipboard: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>`,
+      sun: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>`,
+      moon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>`,
+      trash: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>`,
+      plus: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>`,
+      check: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`,
+      download: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>`,
+      upload: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>`,
+      pencil: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>`,
+      photo: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M2.25 18V6a2.25 2.25 0 012.25-2.25h15A2.25 2.25 0 0121.75 6v12A2.25 2.25 0 0119.5 20.25H4.5A2.25 2.25 0 012.25 18z"/></svg>`,
+      xMark: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`,
+      save: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>`,
+      cloudUpload: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>`,
+      menu: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>`,
+      arrowPath: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.183"/></svg>`,
+      cube: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>`,
+    };
+
+    // ─── UTILITY ───
     function createElement(tag, props = {}, children = []) {
-      const element = document.createElement(tag);
-      const isTextInput = tag.toLowerCase() === 'input' && props.type && props.type.toLowerCase() === 'text';
-      const isTextArea = tag.toLowerCase() === 'textarea';
-      const isSelect = tag.toLowerCase() === 'select';
+      const el = document.createElement(tag);
+      const isTextInput = tag === 'input' && props.type === 'text';
+      const isNumberInput = tag === 'input' && props.type === 'number';
+      const isTextArea = tag === 'textarea';
+      const isSelect = tag === 'select';
+      let valueProp = null;
 
-      let valueProp = null; // Store value prop separately for inputs/textareas
-
-      // Apply attributes and event listeners
       Object.entries(props).forEach(([key, value]) => {
         if (key.startsWith('on') && typeof value === 'function') {
-          const eventName = key.slice(2).toLowerCase();
-          element.addEventListener(eventName, value);
+          el.addEventListener(key.slice(2).toLowerCase(), value);
         } else if (key === 'className') {
-          element.className = value;
+          el.className = value;
         } else if (key === 'disabled') {
-          if (value) element.setAttribute('disabled', '');
+          if (value) el.setAttribute('disabled', '');
         } else if (key === 'innerHTML') {
-          element.innerHTML = value;
+          el.innerHTML = value;
         } else if (key === 'checked') {
-          element.checked = !!value; // Set property directly
-        } else if (key === 'selected' && isSelect) {
-          // 'selected' for option elements is handled later or should be managed by parent select value
-        } else if (key === 'value' && (isTextInput || isTextArea || isSelect)) {
-          // Store value to set it directly later for input/textarea/select
+          el.checked = !!value;
+        } else if (key === 'value' && (isTextInput || isNumberInput || isTextArea || isSelect)) {
           valueProp = value;
         } else if (key === 'style' && typeof value === 'object') {
-          Object.assign(element.style, value);
-        } else if (key !== 'selected') { // Avoid setting selected as attribute for options
-          element.setAttribute(key, value);
+          Object.assign(el.style, value);
+        } else if (key !== 'selected') {
+          el.setAttribute(key, value);
         }
       });
 
-      // Append children (important for select options)
       if (Array.isArray(children)) {
         children.forEach(child => {
-          if (child !== null && child !== undefined) {
-            if (typeof child === 'string' || typeof child === 'number') {
-              element.appendChild(document.createTextNode(child.toString()));
-            } else {
-              element.appendChild(child);
-            }
-          }
+          if (child != null) el.appendChild(typeof child === 'string' || typeof child === 'number' ? document.createTextNode(String(child)) : child);
         });
-      } else if (children !== null && children !== undefined) {
-        if (typeof children === 'string' || typeof children === 'number') {
-          element.appendChild(document.createTextNode(children.toString()));
-        } else {
-          element.appendChild(children);
-        }
+      } else if (children != null) {
+        el.appendChild(typeof children === 'string' || typeof children === 'number' ? document.createTextNode(String(children)) : children);
       }
 
-      // Set value property directly *after* children are appended (especially for select)
-      if (valueProp !== null && (isTextInput || isTextArea || isSelect)) {
-        element.value = valueProp;
-      }
-
-      return element;
+      if (valueProp !== null && (isTextInput || isNumberInput || isTextArea || isSelect)) el.value = valueProp;
+      return el;
     }
 
-    // App state
+    // ─── APP STATE ───
     const state = {
       activeTab: 'form',
+      sidebarOpen: window.innerWidth >= 1024,
       mainInfo: { arsaAlani: "", kaks: "", katSayisi: "1", carpanSayisi: "0" },
       karmaData: { daireSayisi: "", netAlan: "", daireType: "3+1" },
       karmaTypeTouched: false,
+      karmaCollapsed: true,
       karmaList: [],
       result: null,
       selectedAltIndexes: [],
@@ -559,799 +383,650 @@
       history: getProcessHistory(),
       files: [],
       isDarkMode: document.documentElement.classList.contains('dark'),
-      hiddenCols: {
-        alternative: false,
-        daireTipi: false,
-        toplamDaire: false,
-        katBasina: true,
-        net: true,
-        brut: false
-      },
+      hiddenCols: { alternative: false, daireTipi: false, toplamDaire: false, katBasina: true, net: true, brut: false },
       zoom: 100,
       showZoomControls: false,
       editingHistoryIndex: -1,
-      containerDimensions: {
-        width: '100%',
-        height: '600px'
-      },
-      historyTheme: 'blue', // blue, green, purple, orange, red
+      containerDimensions: { width: '100%', height: '600px' },
+      historyTheme: 'blue',
       cleanupResizeHandlers: null,
       zoomControlsTimeout: null
     };
 
-    // Main app components
-    function renderApp() {
-      const appContainer = document.getElementById('app');
+    // ─── CLEAR FORM ───
+    const clearFormData = () => {
+      const overlay = createElement('div', {
+        className: 'fixed inset-0 bg-brand-900/60 backdrop-blur-sm flex items-center justify-center z-50',
+        onClick: (e) => { if (e.target === overlay) closeModal(); }
+      });
+      let handleEsc;
+      const closeModal = () => { overlay.remove(); if (handleEsc) document.removeEventListener('keydown', handleEsc); };
 
-      if (state.cleanupResizeHandlers) {
-        state.cleanupResizeHandlers();
-        state.cleanupResizeHandlers = null;
-      }
-
-      appContainer.innerHTML = '';
-
-      // Add global styles
-      const styles = createElement('style', {}, `
-        .image-container {
-          min-width: 300px;
-          min-height: 200px;
-          max-width: 100%;
-          max-height: 800px;
-          position: relative;
-          cursor: grab;
-          background: #f5f5f5;
-          border-radius: 8px;
-        }
-        .dark .image-container {
-          background: #1f2937;
-        }
-        .image-container:active {
-          cursor: grabbing;
-        }
-        .zoom-controls {
-          position: fixed;
-          bottom: 20px;
-          right: 20px;
-          background: rgba(255, 255, 255, 0.95);
-          padding: 8px 16px;
-          border-radius: 20px;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          z-index: 1000;
-          opacity: 0;
-          transform: translateY(10px);
-          transition: opacity 0.3s ease, transform 0.3s ease;
-          user-select: none;
-        }
-        .dark .zoom-controls {
-          background: rgba(30, 41, 59, 0.95);
-          color: #f3f4f6;
-        }
-        .zoom-controls.visible {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        .zoom-reset {
-          padding: 4px 12px;
-          background: #f3f4f6;
-          border: 1px solid #e5e7eb;
-          border-radius: 16px;
-          cursor: pointer;
-          font-size: 14px;
-          transition: all 0.2s ease;
-        }
-        .dark .zoom-reset {
-          background: #374151;
-          border-color: #4b5563;
-          color: #f3f4f6;
-        }
-        .zoom-reset:hover {
-          background: #e5e7eb;
-          transform: scale(1.05);
-        }
-        .split-pane-container {
-          display: flex;
-          width: 100%;
-          height: 600px;
-          position: relative;
-          border: 2px solid #e5e7eb;
-          border-radius: 8px;
-          overflow: hidden;
-          background-color: white;
-        }
-        .dark .split-pane-container {
-          border-color: #4b5563;
-          background-color: #1f2937;
-        }
-        .split-pane-item {
-          height: 100%;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          transition: width 0.15s ease;
-        }
-        .split-pane-divider {
-          width: 8px;
-          height: 100%;
-          background-color: #f3f4f6;
-          position: absolute;
-          top: 0;
-          cursor: col-resize;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 10;
-          transition: background-color 0.2s;
-        }
-        .dark .split-pane-divider {
-          background-color: #374151;
-        }
-        .split-pane-divider:hover {
-          background-color: #e5e7eb;
-        }
-        .dark .split-pane-divider:hover {
-          background-color: #4b5563;
-        }
-        .split-pane-divider::after {
-          content: '';
-          width: 4px;
-          height: 36px;
-          background-color: #9ca3af;
-          border-radius: 2px;
-        }
-        .dark .split-pane-divider::after {
-          background-color: #6b7280;
-        }
-        
-        /* Resize handle styles */
-        .resize-handle {
-          position: absolute;
-          bottom: 0;
-          right: 0;
-          width: 20px;
-          height: 20px;
-          cursor: nwse-resize;
-          z-index: 20;
-        }
-        
-        .resize-handle::before {
-          content: "";
-          position: absolute;
-          right: 3px;
-          bottom: 3px;
-          width: 12px;
-          height: 12px;
-          border-right: 3px solid #9ca3af;
-          border-bottom: 3px solid #9ca3af;
-          border-bottom-right-radius: 2px;
-        }
-        
-        .dark .resize-handle::before {
-          border-color: #6b7280;
-        }
-        
-        @keyframes clickEffect {
-          0% { background-color: #9333ea; }
-          100% { background-color: #7e22ce; }
-        }
-        .save-button {
-          transition: background-color 0.2s;
-        }
-        .save-button.animating {
-          animation: clickEffect 0.2s ease;
-        }
-        
-        /* Dark mode text visibility fixes */
-        .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
-          color: #f3f4f6;
-        }
-        .dark .text-gray-800 {
-          color: #f3f4f6;
-        }
-        .dark .text-gray-700 {
-          color: #e5e7eb;
-        }
-        .dark .text-gray-600 {
-          color: #d1d5db;
-        }
-
-        /* Mobile optimizations */
-        @media (max-width: 640px) {
-          input[type="text"],
-          input[type="number"],
-          select,
-          textarea,
-          button {
-            min-height: 44px; /* Touch target size */
-          }
-
-          /* Prevent zoom on input focus on iOS */
-          input[type="text"],
-          input[type="number"],
-          select,
-          textarea {
-            font-size: 16px !important;
-          }
-        }
-      `);
-      appContainer.appendChild(styles);
-
-      // Header with title and theme toggle
-      const header = createElement('header', {
-        className: 'mb-4 md:mb-6 flex items-center justify-between bg-gradient-to-br from-slate-700 via-slate-600 to-slate-500 dark:from-slate-800 dark:via-slate-700 dark:to-slate-600 p-3 md:p-6 rounded-xl shadow-2xl border border-slate-400/20'
-      }, [
-        createElement('h1', {
-          className: 'text-xl md:text-3xl font-bold flex-1 text-center text-white drop-shadow-lg tracking-wide'
-        }, 'Emsal Hesaplama (Byres)'),
-
-        createElement('button', {
-          className: 'p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm transition-all flex-shrink-0',
-          title: state.isDarkMode ? 'Açık Moda Geç' : 'Koyu Moda Geç',
-          onClick: toggleDarkMode
-        }, [
-          createElement('svg', {
-            className: 'w-5 h-5 md:w-6 md:h-6',
-            fill: 'none',
-            viewBox: '0 0 24 24',
-            stroke: 'currentColor',
-            innerHTML: state.isDarkMode
-              ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>'
-              : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>'
-          })
-        ])
-      ]);
-      appContainer.appendChild(header);
-
-      // Error message
-      if (state.error) {
-        const alertElement = createElement('div', {
-          className: 'border-l-4 p-4 mb-4 bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400'
-        }, state.error);
-        appContainer.appendChild(alertElement);
-      }
-
-      // Tab navigation
-      const tabContainer = createElement('div', {
-        className: 'mb-4 flex gap-1 md:gap-2 justify-center'
-      }, [
-        createElement('button', {
-          className: 'px-4 md:px-6 py-2 md:py-3 text-sm md:text-base font-bold rounded-xl transition-all bg-primary-500 hover:bg-primary-600 text-white shadow-soft dark:shadow-soft-dark hover:-translate-y-0.5',
-          onClick: clearFormData
-        }, 'Temizle'),
-
-        createElement('button', {
-          className: `px-4 md:px-6 py-2 md:py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-300 ${state.activeTab === 'form'
-            ? "bg-white/90 dark:bg-slate-800/90 text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 shadow-sm backdrop-blur-md"
-            : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 backdrop-blur-sm"
-            }`,
-          onClick: () => {
-            state.activeTab = 'form';
-            renderApp();
-          }
-        }, 'Form'),
-
-        createElement('button', {
-          className: `px-4 md:px-6 py-2 md:py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-300 ${state.activeTab === 'results'
-            ? "bg-white/90 dark:bg-slate-800/90 text-success-600 dark:text-success-400 border-b-2 border-success-500 shadow-sm backdrop-blur-md"
-            : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 backdrop-blur-sm"
-            }`,
-          onClick: () => {
-            state.activeTab = 'results';
-            renderApp();
-          }
-        }, 'Sonuçlar'),
-
-        createElement('button', {
-          className: `px-4 md:px-6 py-2 md:py-3 text-sm md:text-base font-bold rounded-xl transition-all duration-300 ${state.activeTab === 'history'
-            ? "bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 border-b-2 border-slate-500 shadow-sm backdrop-blur-md"
-            : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 backdrop-blur-sm"
-            }`,
-          onClick: () => {
-            state.activeTab = 'history';
-            renderApp();
-          }
-        }, 'Kayıtlar')
-      ]);
-      appContainer.appendChild(tabContainer);
-
-      // Tab content
-      let tabContent;
-      switch (state.activeTab) {
-        case 'form':
-          tabContent = renderFormTab();
-          break;
-        case 'results':
-          tabContent = renderResultsTab();
-          break;
-        case 'history':
-          tabContent = renderHistoryTab();
-          break;
-      }
-
-      appContainer.appendChild(tabContent);
-    }
-
-    function createCard(title, children, className = '') {
-      const card = createElement('div', {
-        className: `bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-2xl shadow-soft dark:shadow-soft-dark border border-slate-200/60 dark:border-slate-700/50 p-4 md:p-6 mb-4 md:mb-5 transition-all duration-300 hover:shadow-xl dark:hover:shadow-2xl ${className}`
+      const mobDlg = window.innerWidth < 768;
+      const modal = createElement('div', {
+        className: `bg-white dark:bg-brand-800 shadow-elevated border border-brand-200 dark:border-brand-700 ${mobDlg ? 'rounded-xl p-5 mx-5 max-w-xs w-full' : 'rounded-xl p-6 max-w-sm mx-4'}`
       });
 
-      if (title) {
-        const titleElement = createElement('h2', {
-          className: 'text-xl md:text-2xl font-bold mb-3 md:mb-4 text-slate-800 dark:text-white tracking-tight'
-        }, title);
-        card.appendChild(titleElement);
-      }
+      const iconWrap = createElement('div', { className: 'flex justify-center mb-4' });
+      const iconCircle = createElement('div', {
+        className: 'w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center text-red-500'
+      });
+      iconCircle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>`;
+      iconWrap.appendChild(iconCircle);
+      modal.appendChild(iconWrap);
 
-      if (Array.isArray(children)) {
-        children.forEach(child => {
-          if (child) card.appendChild(child);
-        });
-      } else if (children) {
-        card.appendChild(children);
-      }
+      modal.appendChild(createElement('p', {
+        className: 'text-brand-700 dark:text-brand-200 text-center mb-6 text-sm font-medium'
+      }, 'Tüm verileri temizlemek istediğinizden emin misiniz?'));
 
-      return card;
-    }
+      const btnRow = createElement('div', { className: 'flex gap-3' });
+      btnRow.appendChild(createElement('button', {
+        className: 'flex-1 py-2.5 px-4 rounded-lg text-sm font-medium border border-brand-200 dark:border-brand-600 text-brand-600 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-700 transition-colors duration-200 cursor-pointer',
+        onClick: closeModal
+      }, 'Vazgeç'));
+      btnRow.appendChild(createElement('button', {
+        className: 'flex-1 py-2.5 px-4 rounded-lg text-sm font-medium bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 cursor-pointer',
+        onClick: () => { closeModal(); performClear(); }
+      }, 'Temizle'));
+      modal.appendChild(btnRow);
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
 
-    function createLabel(text) {
-      return createElement('label', {
-        className: 'block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300'
-      }, text);
-    }
+      handleEsc = (e) => { if (e.key === 'Escape') closeModal(); };
+      document.addEventListener('keydown', handleEsc);
+    };
 
-    // Toggle dark mode
+    const performClear = () => {
+      state.karmaData = { daireSayisi: "", netAlan: "", daireType: "3+1" };
+      state.karmaTypeTouched = false;
+      state.karmaList = [];
+      state.result = null;
+      state.selectedAltIndexes = [];
+      state.finalAlternatives = null;
+      state.error = "";
+      processHistoryData = [];
+      state.history = [];
+      state.files = [];
+      saveToStorage();
+      renderApp();
+      showNotification('Veriler temizlendi (ana bilgiler korundu)', 'success');
+    };
+
+    // ─── TOGGLE DARK MODE ───
     function toggleDarkMode() {
-      if (document.documentElement.classList.contains('dark')) {
-        document.documentElement.classList.remove('dark');
-        state.isDarkMode = false;
-      } else {
-        document.documentElement.classList.add('dark');
-        state.isDarkMode = true;
-      }
+      document.documentElement.classList.toggle('dark');
+      state.isDarkMode = document.documentElement.classList.contains('dark');
       renderApp();
     }
 
-    // Tab render functions
+    // ─── INPUT COMPONENTS ───
+    function createInput(label, props) {
+      const mob = window.innerWidth < 768;
+      const group = createElement('div', { className: 'space-y-1.5' });
+      group.appendChild(createElement('label', {
+        className: `block font-semibold uppercase tracking-wider text-brand-500 dark:text-brand-400 ${mob ? 'text-[11px]' : 'text-xs'}`
+      }, label));
+      group.appendChild(createElement('input', {
+        ...props,
+        className: `w-full rounded-lg border border-brand-200 dark:border-brand-600 bg-white dark:bg-brand-800 text-brand-800 dark:text-brand-100 font-medium placeholder-brand-400 dark:placeholder-brand-500 focus:outline-none focus:ring-2 focus:ring-accent-400/40 focus:border-accent-400 transition-colors duration-200 ${mob ? 'px-3 py-3 text-base' : 'px-3 py-2.5 text-sm'} ${props.className || ''}`,
+        style: { minHeight: mob ? '48px' : '42px', ...(props.style || {}) }
+      }));
+      return group;
+    }
+
+    function createSelect(label, options, value, onChange) {
+      const mob = window.innerWidth < 768;
+      const group = createElement('div', { className: 'space-y-1.5' });
+      group.appendChild(createElement('label', {
+        className: `block font-semibold uppercase tracking-wider text-brand-500 dark:text-brand-400 ${mob ? 'text-[11px]' : 'text-xs'}`
+      }, label));
+      const select = createElement('select', {
+        className: `w-full rounded-lg border border-brand-200 dark:border-brand-600 bg-white dark:bg-brand-800 text-brand-800 dark:text-brand-100 font-medium focus:outline-none focus:ring-2 focus:ring-accent-400/40 focus:border-accent-400 transition-colors duration-200 cursor-pointer ${mob ? 'px-3 py-3 text-base' : 'px-3 py-2.5 text-sm'}`,
+        onChange,
+        style: { minHeight: mob ? '48px' : '42px' }
+      });
+      options.forEach(opt => {
+        select.appendChild(createElement('option', { value: opt.value, selected: opt.value === value }, opt.label));
+      });
+      select.value = value;
+      group.appendChild(select);
+      return group;
+    }
+
+    // ─── RENDER APP ───
+    function renderApp() {
+      const appContainer = document.getElementById('app');
+      if (state.cleanupResizeHandlers) { state.cleanupResizeHandlers(); state.cleanupResizeHandlers = null; }
+      appContainer.innerHTML = '';
+
+      const isMobile = window.innerWidth < 768;
+      const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+
+      const navItems = [
+        { id: 'form', label: 'Hesaplama', icon: icons.calculator },
+        { id: 'results', label: 'Sonuçlar', icon: icons.chartBar },
+        { id: 'history', label: 'Kayıtlar', icon: icons.clipboard },
+      ];
+
+      // ── DESKTOP SIDEBAR (>= 1024px) ──
+      if (!isMobile && !isTablet) {
+        const sidebar = createElement('aside', {
+          className: 'relative w-64 flex-shrink-0 transition-all duration-300 ease-out overflow-hidden'
+        });
+        const sidebarInner = createElement('div', {
+          className: 'w-64 h-full bg-brand-900 dark:bg-brand-950 flex flex-col border-r border-brand-800'
+        });
+
+        const sidebarHeader = createElement('div', { className: 'p-5 border-b border-brand-800/50' });
+        const logoRow = createElement('div', { className: 'flex items-center gap-3' });
+        const logoIcon = createElement('div', {
+          className: 'w-9 h-9 rounded-lg bg-accent-500 flex items-center justify-center text-white flex-shrink-0'
+        });
+        logoIcon.innerHTML = icons.cube;
+        logoRow.appendChild(logoIcon);
+        const logoText = createElement('div');
+        logoText.appendChild(createElement('h1', { className: 'text-sm font-bold text-white tracking-tight' }, 'EMSAL'));
+        logoText.appendChild(createElement('p', { className: 'text-[10px] font-medium text-brand-400 uppercase tracking-widest' }, 'Mimari Platform'));
+        logoRow.appendChild(logoText);
+        sidebarHeader.appendChild(logoRow);
+        sidebarInner.appendChild(sidebarHeader);
+
+        const nav = createElement('nav', { className: 'flex-1 p-3 space-y-1' });
+        navItems.forEach(item => {
+          const isActive = state.activeTab === item.id;
+          const btn = createElement('button', {
+            className: `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer ${isActive
+              ? 'bg-accent-500/15 text-accent-400 border border-accent-500/20'
+              : 'text-brand-400 hover:text-white hover:bg-brand-800/60 border border-transparent'}`,
+            onClick: () => { state.activeTab = item.id; renderApp(); }
+          });
+          const iconSpan = createElement('span', { className: isActive ? 'text-accent-400' : 'text-brand-500' });
+          iconSpan.innerHTML = item.icon;
+          btn.appendChild(iconSpan);
+          btn.appendChild(createElement('span', {}, item.label));
+          nav.appendChild(btn);
+        });
+        sidebarInner.appendChild(nav);
+
+        const sidebarFooter = createElement('div', { className: 'p-3 border-t border-brand-800/50 space-y-1' });
+        const darkToggle = createElement('button', {
+          className: 'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-brand-400 hover:text-white hover:bg-brand-800/60 transition-colors duration-200 cursor-pointer',
+          onClick: toggleDarkMode
+        });
+        const darkIcon = createElement('span', { className: 'text-brand-500' });
+        darkIcon.innerHTML = state.isDarkMode ? icons.sun : icons.moon;
+        darkToggle.appendChild(darkIcon);
+        darkToggle.appendChild(createElement('span', {}, state.isDarkMode ? 'Açık Mod' : 'Koyu Mod'));
+        sidebarFooter.appendChild(darkToggle);
+
+        sidebarInner.appendChild(sidebarFooter);
+        sidebar.appendChild(sidebarInner);
+        appContainer.appendChild(sidebar);
+      }
+
+      // ── MAIN CONTENT ──
+      const main = createElement('main', {
+        className: 'flex-1 flex flex-col min-w-0 overflow-hidden'
+      });
+
+      // ── TOP BAR ──
+      const topBar = createElement('header', {
+        className: `flex-shrink-0 bg-white/90 dark:bg-brand-900/90 backdrop-blur-md border-b border-brand-200 dark:border-brand-800 flex items-center justify-between z-20 ${isMobile ? 'h-12 px-3' : 'h-14 px-4 lg:px-6'}`
+      });
+
+      const leftTop = createElement('div', { className: 'flex items-center gap-2.5' });
+
+      if (isMobile) {
+        const logoSmall = createElement('div', {
+          className: 'w-7 h-7 rounded-md bg-accent-500 flex items-center justify-center text-white flex-shrink-0'
+        });
+        logoSmall.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>`;
+        leftTop.appendChild(logoSmall);
+      } else if (isTablet) {
+        const logoMed = createElement('div', {
+          className: 'w-8 h-8 rounded-lg bg-accent-500 flex items-center justify-center text-white flex-shrink-0'
+        });
+        logoMed.innerHTML = icons.cube;
+        leftTop.appendChild(logoMed);
+      }
+
+      const tabTitle = navItems.find(i => i.id === state.activeTab);
+      leftTop.appendChild(createElement('h2', {
+        className: `font-bold text-brand-800 dark:text-white tracking-tight ${isMobile ? 'text-base' : 'text-lg'}`
+      }, tabTitle ? tabTitle.label : ''));
+      topBar.appendChild(leftTop);
+
+      const rightTop = createElement('div', { className: 'flex items-center gap-1.5' });
+
+      // Dark mode toggle in top bar for mobile/tablet
+      if (isMobile || isTablet) {
+        const darkBtn = createElement('button', {
+          className: 'p-2 rounded-lg text-brand-400 hover:text-brand-600 dark:hover:text-white hover:bg-brand-100 dark:hover:bg-brand-800 transition-colors duration-200 cursor-pointer',
+          onClick: toggleDarkMode,
+          title: state.isDarkMode ? 'Açık Mod' : 'Koyu Mod'
+        });
+        darkBtn.innerHTML = state.isDarkMode ? icons.sun : icons.moon;
+        rightTop.appendChild(darkBtn);
+
+      }
+
+      if (!isMobile) {
+        const badge = createElement('span', {
+          className: 'inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent-50 dark:bg-accent-900/30 text-accent-600 dark:text-accent-400 border border-accent-200 dark:border-accent-700/50'
+        }, 'Byres v2.0');
+        rightTop.appendChild(badge);
+      }
+      topBar.appendChild(rightTop);
+      main.appendChild(topBar);
+
+      // ── CONTENT AREA ──
+      const contentArea = createElement('div', {
+        className: `flex-1 overflow-y-auto ${isMobile ? 'px-3 pt-3 pb-3 content-safe-bottom' : isTablet ? 'p-4' : 'p-4 lg:p-6'}`
+      });
+
+      if (state.error) {
+        const alert = createElement('div', {
+          className: `mb-3 flex items-start gap-2.5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-300 ${isMobile ? 'p-3 text-xs' : 'p-4 text-sm'}`
+        });
+        const alertIcon = createElement('span', { className: 'flex-shrink-0 mt-0.5 text-red-500' });
+        alertIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>`;
+        alert.appendChild(alertIcon);
+        alert.appendChild(createElement('span', {}, state.error));
+        contentArea.appendChild(alert);
+      }
+
+      switch (state.activeTab) {
+        case 'form': contentArea.appendChild(renderFormTab()); break;
+        case 'results': contentArea.appendChild(renderResultsTab()); break;
+        case 'history': contentArea.appendChild(renderHistoryTab()); break;
+      }
+
+      main.appendChild(contentArea);
+
+      // ── MOBILE / TABLET BOTTOM NAV ──
+      if (isMobile || isTablet) {
+        const bottomNav = createElement('nav', {
+          className: 'flex-shrink-0 bg-white/95 dark:bg-brand-900/95 backdrop-blur-md border-t border-brand-200 dark:border-brand-800 bottom-nav-safe relative'
+        });
+
+        const navRow = createElement('div', {
+          className: 'flex items-stretch justify-around'
+        });
+
+        navItems.forEach(item => {
+          const isActive = state.activeTab === item.id;
+          const btn = createElement('button', {
+            className: `flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors duration-200 cursor-pointer relative ${isActive
+              ? 'text-accent-500'
+              : 'text-brand-400 dark:text-brand-500 active:text-brand-600 dark:active:text-brand-300'}`,
+            onClick: () => { state.activeTab = item.id; renderApp(); },
+            style: { minHeight: '52px', WebkitTapHighlightColor: 'transparent' }
+          });
+
+          if (isActive) {
+            const indicator = createElement('div', {
+              className: 'absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-accent-500 nav-indicator'
+            });
+            btn.appendChild(indicator);
+          }
+
+          const iconWrap = createElement('span', {
+            className: `transition-transform duration-200 ${isActive ? 'scale-110' : ''}`
+          });
+          iconWrap.innerHTML = item.icon;
+          btn.appendChild(iconWrap);
+
+          btn.appendChild(createElement('span', {
+            className: `text-[10px] font-semibold tracking-wide ${isActive ? 'text-accent-500' : ''}`
+          }, item.label));
+
+          navRow.appendChild(btn);
+        });
+
+        bottomNav.appendChild(navRow);
+        main.appendChild(bottomNav);
+      }
+
+      appContainer.appendChild(main);
+    }
+
+    // ─── CARD COMPONENT ───
+    function createCard(title, children, className = '') {
+      const mob = window.innerWidth < 768;
+      const card = createElement('div', {
+        className: `bg-white dark:bg-brand-800/80 border border-brand-200 dark:border-brand-700/50 shadow-panel transition-shadow duration-200 hover:shadow-panel-hover ${mob ? 'rounded-lg' : 'rounded-xl'} ${className}`
+      });
+      if (title) {
+        const header = createElement('div', { className: `${mob ? 'px-3.5 py-3' : 'px-5 py-4'} border-b border-brand-100 dark:border-brand-700/50` });
+        header.appendChild(createElement('h3', {
+          className: `font-bold uppercase tracking-wider text-brand-800 dark:text-white ${mob ? 'text-xs' : 'text-sm'}`
+        }, title));
+        card.appendChild(header);
+      }
+      const body = createElement('div', { className: mob ? 'p-3.5' : 'p-5' });
+      if (Array.isArray(children)) { children.forEach(c => { if (c) body.appendChild(c); }); }
+      else if (children) body.appendChild(children);
+      card.appendChild(body);
+      return card;
+    }
+
+    // ─── FORM TAB ───
     function renderFormTab() {
-      const container = createElement('div', {
-        className: 'grid grid-cols-1 md:grid-cols-2 gap-4'
-      });
+      const mob = window.innerWidth < 768;
+      const container = createElement('div', { className: `max-w-4xl mx-auto ${mob ? 'space-y-3' : 'space-y-5'}` });
 
-      // Ana Bilgiler Card
-      const mainInfoForm = createElement('div', {
-        className: 'grid grid-cols-1 gap-4'
+      // Summary stats
+      const statsRow = createElement('div', { className: `grid grid-cols-2 lg:grid-cols-4 ${mob ? 'gap-2' : 'gap-3'}` });
+      const statsData = [
+        { label: 'Arsa Alanı', value: state.mainInfo.arsaAlani ? `${state.mainInfo.arsaAlani} m²` : '--', color: 'text-brand-600 dark:text-brand-300' },
+        { label: 'KAKS', value: state.mainInfo.kaks || '--', color: 'text-accent-600 dark:text-accent-400' },
+        { label: 'Kat Sayısı', value: state.mainInfo.katSayisi || '--', color: 'text-brand-600 dark:text-brand-300' },
+        { label: 'Karma Alan', value: state.karmaList.length ? `${state.karmaList.length} adet` : '--', color: 'text-emerald-600 dark:text-emerald-400' },
+      ];
+      statsData.forEach(s => {
+        const statCard = createElement('div', {
+          className: `bg-white dark:bg-brand-800/80 border border-brand-200 dark:border-brand-700/50 shadow-panel ${mob ? 'rounded-lg p-3' : 'rounded-xl p-4'}`
+        });
+        statCard.appendChild(createElement('p', { className: `font-semibold uppercase tracking-widest text-brand-400 dark:text-brand-500 mb-0.5 ${mob ? 'text-[9px]' : 'text-[10px]'}` }, s.label));
+        statCard.appendChild(createElement('p', { className: `font-bold font-mono ${s.color} ${mob ? 'text-base' : 'text-lg'}` }, s.value));
+        statsRow.appendChild(statCard);
       });
+      container.appendChild(statsRow);
 
-      // Arsa Alanı
-      const arsaAlaniGroup = createElement('div');
-      arsaAlaniGroup.appendChild(createLabel('Arsa Alanı (m²)'));
-      arsaAlaniGroup.appendChild(createElement('input', {
-        type: 'number',
-        min: '0',
-        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+      // Forms grid
+      const grid = createElement('div', { className: `grid grid-cols-1 lg:grid-cols-2 ${mob ? 'gap-3' : 'gap-5'}` });
+
+      // Ana Bilgiler
+      const mainForm = createElement('div', { className: 'space-y-4' });
+      mainForm.appendChild(createInput('Arsa Alanı (m²)', {
+        type: 'number', min: '0', placeholder: 'Ör: 500',
         value: state.mainInfo.arsaAlani,
-        onInput: e => {
-          state.mainInfo.arsaAlani = e.target.value;
-          debouncedSaveToStorage();
-        }
+        onInput: e => { state.mainInfo.arsaAlani = e.target.value; debouncedSaveToStorage(); }
       }));
-      mainInfoForm.appendChild(arsaAlaniGroup);
-
-      // Kat Sayısı
-      const katSayisiGroup = createElement('div');
-      katSayisiGroup.appendChild(createLabel('Kat Sayısı'));
-      katSayisiGroup.appendChild(createElement('input', {
-        type: 'number',
-        min: '1',
-        className: 'border-2 border-yellow-400 bg-yellow-50 focus:border-yellow-500 focus:ring-yellow-500 rounded p-2 w-full text-base font-medium dark:bg-yellow-900/30 dark:border-yellow-600 dark:text-yellow-200',
+      mainForm.appendChild(createInput('Kat Sayısı', {
+        type: 'number', min: '1', placeholder: 'Ör: 5',
         value: state.mainInfo.katSayisi,
-        onInput: e => {
-          state.mainInfo.katSayisi = e.target.value;
-          debouncedSaveToStorage();
-        }
+        className: '!border-accent-300 dark:!border-accent-600 !bg-accent-50/50 dark:!bg-accent-900/20',
+        onInput: e => { state.mainInfo.katSayisi = e.target.value; debouncedSaveToStorage(); }
       }));
-      mainInfoForm.appendChild(katSayisiGroup);
 
-      // KAKS
-      const kaksGroup = createElement('div');
-      kaksGroup.appendChild(createLabel('KAKS (Baz Emsal)'));
-      const kaksDefaults = ['1', '1.2', '1.5', '1.8', '2', '2.55'];
+      const kaksGroup = createElement('div', { className: 'space-y-1.5' });
+      kaksGroup.appendChild(createElement('label', {
+        className: `block font-semibold uppercase tracking-wider text-brand-500 dark:text-brand-400 ${mob ? 'text-[11px]' : 'text-xs'}`
+      }, 'KAKS (Baz Emsal)'));
       const kaksDatalist = createElement('datalist', { id: 'kaks-options' });
-      kaksDefaults.forEach(value => {
-        kaksDatalist.appendChild(createElement('option', { value }));
-      });
+      ['1', '1.2', '1.5', '1.8', '2', '2.55'].forEach(v => kaksDatalist.appendChild(createElement('option', { value: v })));
       kaksGroup.appendChild(kaksDatalist);
       kaksGroup.appendChild(createElement('input', {
-        type: 'number',
-        step: '0.01',
-        min: '0',
-        list: 'kaks-options',
-        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+        type: 'number', step: '0.01', min: '0', list: 'kaks-options', placeholder: 'Ör: 1.5',
+        className: `w-full rounded-lg border border-brand-200 dark:border-brand-600 bg-white dark:bg-brand-800 text-brand-800 dark:text-brand-100 font-medium placeholder-brand-400 dark:placeholder-brand-500 focus:outline-none focus:ring-2 focus:ring-accent-400/40 focus:border-accent-400 transition-colors duration-200 ${mob ? 'px-3 py-3 text-base' : 'px-3 py-2.5 text-sm'}`,
+        style: { minHeight: mob ? '48px' : '42px' },
         value: state.mainInfo.kaks,
         onInput: e => {
-          const normalizedValue = e.target.value.replace(',', '.');
-          if (normalizedValue !== e.target.value) {
-            e.target.value = normalizedValue;
-          }
-          state.mainInfo.kaks = normalizedValue;
+          const v = e.target.value.replace(',', '.');
+          if (v !== e.target.value) e.target.value = v;
+          state.mainInfo.kaks = v;
           debouncedSaveToStorage();
         }
       }));
-      mainInfoForm.appendChild(kaksGroup);
+      mainForm.appendChild(kaksGroup);
 
-      // Çarpan Sayısı
-      const carpanGroup = createElement('div');
-      carpanGroup.appendChild(createLabel('Çarpan Sayısı'));
-
-      const carpanSelect = createElement('select', {
-        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
-        onChange: e => {
-          state.mainInfo.carpanSayisi = e.target.value;
-          debouncedSaveToStorage();
-        }
-      });
-
-      // Çarpan seçenekleri
-      [
+      mainForm.appendChild(createSelect('Çarpan Sayısı', [
         { value: '0', label: 'Çarpansız' },
         { value: '1', label: '1 Çarpan' },
         { value: '2', label: '2 Çarpan' },
-        { value: '3', label: '3 Çarpan' }
-      ].forEach(option => {
-        carpanSelect.appendChild(createElement('option', {
-          value: option.value,
-          selected: option.value === state.mainInfo.carpanSayisi
-        }, option.label));
-      });
+        { value: '3', label: '3 Çarpan' },
+      ], state.mainInfo.carpanSayisi, e => { state.mainInfo.carpanSayisi = e.target.value; debouncedSaveToStorage(); }));
 
-      // Seçilen değeri ayarla (eski yöntem güvenilir olmadığı için)
-      for (let i = 0; i < carpanSelect.options.length; i++) {
-        if (carpanSelect.options[i].value === state.mainInfo.carpanSayisi) {
-          carpanSelect.selectedIndex = i;
-          break;
-        }
-      }
-
-      carpanGroup.appendChild(carpanSelect);
-      mainInfoForm.appendChild(carpanGroup);
-
-      // Create and add the main info card
-      const mainInfoCard = createCard('Ana Bilgiler', mainInfoForm);
-      container.appendChild(mainInfoCard);
+      grid.appendChild(createCard('Ana Bilgiler', mainForm));
 
       // Karma Form
-      const karmaForm = createElement('div', {
-        className: 'grid grid-cols-1 gap-4'
-      });
+      const karmaForm = createElement('div', { className: 'space-y-4' });
+      karmaForm.appendChild(createSelect('Daire Tipi', C.OPT.map(o => ({ value: o, label: o })), state.karmaData.daireType, e => {
+        state.karmaData.daireType = e.target.value;
+        state.karmaTypeTouched = true;
+        renderApp();
+      }));
 
-      // Daire Tipi
-      const daireTypeGroup = createElement('div');
-      daireTypeGroup.appendChild(createLabel('Daire Tipi'));
-
-      const daireTypeSelect = createElement('select', {
-        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
-        value: state.karmaData.daireType,
-        onChange: e => {
-          state.karmaData.daireType = e.target.value;
-          state.karmaTypeTouched = true;
-          renderApp();
-        }
-      });
-
-      C.OPT.forEach(option => {
-        daireTypeSelect.appendChild(createElement('option', {
-          value: option,
-          selected: option === state.karmaData.daireType
-        }, option));
-      });
-
-      // Güvenli tarafta kalmak için değeri tekrar ata
-      daireTypeSelect.value = state.karmaData.daireType;
-
-      daireTypeGroup.appendChild(daireTypeSelect);
-      karmaForm.appendChild(daireTypeGroup);
-
-      // Net Alan
-      const netAlanGroup = createElement('div');
-      netAlanGroup.appendChild(createLabel('Net Alan (m²)'));
-      netAlanGroup.appendChild(createElement('input', {
-        type: 'number',
-        min: '0',
-        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+      karmaForm.appendChild(createInput('Net Alan (m²)', {
+        type: 'number', min: '0', placeholder: 'Ör: 120',
         value: state.karmaData.netAlan,
         onChange: e => {
           state.karmaData.netAlan = e.target.value;
-
-          // Eğer kullanıcı tipi elle seçmediyse net alana göre otomatik belirle
           const netVal = parseFloat(e.target.value);
           if (!state.karmaTypeTouched && !isNaN(netVal) && netVal >= C.MIN) {
             const autoType = getType(netVal);
             if (autoType !== "Geçersiz" && autoType !== state.karmaData.daireType) {
               state.karmaData.daireType = autoType;
               renderApp();
-              return;
             }
           }
         }
       }));
-      karmaForm.appendChild(netAlanGroup);
 
-      // Daire Sayısı (TİCARİ dışında)
       if (state.karmaData.daireType !== 'TİCARİ') {
-        const daireSayisiGroup = createElement('div');
-        daireSayisiGroup.appendChild(createLabel('Daire Sayısı'));
-        daireSayisiGroup.appendChild(createElement('input', {
-          type: 'number',
-          min: '0',
-          className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+        karmaForm.appendChild(createInput('Daire Sayısı', {
+          type: 'number', min: '0', placeholder: 'Ör: 4',
           value: state.karmaData.daireSayisi,
-          onChange: e => {
-            state.karmaData.daireSayisi = e.target.value;
-          }
+          onChange: e => { state.karmaData.daireSayisi = e.target.value; }
         }));
-        karmaForm.appendChild(daireSayisiGroup);
       }
 
-      // Ekle Butonu
-      const ekleButtonGroup = createElement('div', {
-        className: 'flex items-end'
+      const addBtn = createElement('button', {
+        className: `w-full flex items-center justify-center gap-2 rounded-lg bg-accent-500 hover:bg-accent-600 text-white font-semibold transition-colors duration-200 cursor-pointer shadow-sm active:scale-[0.98] ${mob ? 'py-3 text-sm' : 'py-2.5 text-sm'}`,
+        onClick: addKarma,
+        style: { minHeight: '48px' }
       });
-      const ekleButton = createElement('button', {
-        className: 'w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-xl shadow-soft dark:shadow-soft-dark hover:shadow-xl transition-all dark:bg-amber-600 dark:hover:bg-amber-700 hover:-translate-y-0.5',
-        onClick: addKarma
-      }, 'Ekle');
-      ekleButtonGroup.appendChild(ekleButton);
-      karmaForm.appendChild(ekleButtonGroup);
+      const addIcon = createElement('span');
+      addIcon.innerHTML = icons.plus;
+      addBtn.appendChild(addIcon);
+      addBtn.appendChild(createElement('span', {}, 'Karma Alan Ekle'));
+      karmaForm.appendChild(addBtn);
 
-      // Karma List
+      // Karma list
       if (state.karmaList.length > 0) {
-        const karmaListContainer = createElement('div', {
-          className: 'mt-4'
-        });
-
-        const karmaListTitle = createElement('h4', {
-          className: 'font-semibold mb-2'
-        }, 'Tanımlanan Karma Alanlar');
-        karmaListContainer.appendChild(karmaListTitle);
-
+        const listDiv = createElement('div', { className: 'mt-3 space-y-2' });
+        listDiv.appendChild(createElement('p', {
+          className: 'text-[10px] font-semibold uppercase tracking-widest text-brand-400 mb-2'
+        }, 'Tanımlanan Alanlar'));
         state.karmaList.forEach((item, index) => {
-          const karmaItem = createElement('div', {
-            className: 'flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-3 rounded border dark:border-gray-600 mb-2'
+          const row = createElement('div', {
+            className: 'flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-brand-50 dark:bg-brand-700/40 border border-brand-100 dark:border-brand-700/50'
           });
-
-          const karmaText = createElement('span', {
-            className: 'text-sm'
-          }, `${item.daireType} -- ${item.daireSayisi} adet, ${item.netAlan} m² (Net)`);
-          karmaItem.appendChild(karmaText);
-
-          const deleteButton = createElement('button', {
-            className: 'text-red-600 hover:text-red-800 hover:bg-red-50 px-2 rounded dark:text-red-400 dark:hover:bg-red-900/30',
-            onClick: () => {
-              state.karmaList = state.karmaList.filter((_, i) => i !== index);
-              renderApp();
-            }
-          }, 'Sil');
-          karmaItem.appendChild(deleteButton);
-
-          karmaListContainer.appendChild(karmaItem);
+          row.appendChild(createElement('span', {
+            className: `font-medium text-brand-700 dark:text-brand-200 font-mono min-w-0 ${mob ? 'text-xs' : 'text-sm'}`
+          }, `${item.daireType}  ${item.daireSayisi} ad.  ${item.netAlan} m²`));
+          const delBtn = createElement('button', {
+            className: 'p-1 rounded text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 cursor-pointer',
+            onClick: () => { state.karmaList = state.karmaList.filter((_, i) => i !== index); renderApp(); }
+          });
+          delBtn.innerHTML = icons.xMark;
+          row.appendChild(delBtn);
+          listDiv.appendChild(row);
         });
-
-        karmaForm.appendChild(karmaListContainer);
+        karmaForm.appendChild(listDiv);
       }
 
-      // Create and add the karma form card
-      const karmaFormCard = createCard('Karma Alan Tanımlama', karmaForm);
-      container.appendChild(karmaFormCard);
+      if (mob) {
+        const karmaCard = createElement('div', {
+          className: 'bg-white dark:bg-brand-800/80 border border-brand-200 dark:border-brand-700/50 shadow-panel rounded-lg'
+        });
+        const karmaHeader = createElement('div', {
+          className: 'px-3.5 py-3 flex items-center justify-between cursor-pointer select-none active:bg-brand-50 dark:active:bg-brand-700/40 transition-colors duration-150',
+          onClick: () => { state.karmaCollapsed = !state.karmaCollapsed; renderApp(); }
+        });
+        karmaHeader.appendChild(createElement('h3', {
+          className: 'font-bold uppercase tracking-wider text-brand-800 dark:text-white text-xs'
+        }, 'Karma Alan Tanımlama'));
 
-      // Hesapla ve Dosya Yükleme Card
-      const actionCardContent = createElement('div');
+        const chevronWrap = createElement('div', {
+          className: 'flex items-center gap-2'
+        });
+        if (state.karmaList.length > 0) {
+          chevronWrap.appendChild(createElement('span', {
+            className: 'text-[10px] font-bold bg-accent-100 dark:bg-accent-900/30 text-accent-600 dark:text-accent-400 px-2 py-0.5 rounded-full'
+          }, String(state.karmaList.length)));
+        }
+        const chevron = createElement('span', {
+          className: `text-brand-400 transition-transform duration-200 ${state.karmaCollapsed ? '' : 'rotate-180'}`,
+        });
+        chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>`;
+        chevronWrap.appendChild(chevron);
+        karmaHeader.appendChild(chevronWrap);
+        karmaCard.appendChild(karmaHeader);
 
-      const hesaplaButton = createElement('button', {
-        className: 'w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-bold py-3 px-6 rounded-xl shadow-soft dark:shadow-soft-dark hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 transform-gpu text-lg tracking-wide',
-        onClick: calculate
-      }, 'Hesapla');
+        if (!state.karmaCollapsed) {
+          const karmaBody = createElement('div', { className: 'p-3.5 border-t border-brand-100 dark:border-brand-700/50' });
+          karmaBody.appendChild(karmaForm);
+          karmaCard.appendChild(karmaBody);
+        }
 
-      actionCardContent.appendChild(hesaplaButton);
+        grid.appendChild(karmaCard);
+      } else {
+        grid.appendChild(createCard('Karma Alan Tanımlama', karmaForm));
+      }
+      container.appendChild(grid);
 
-      const fileUploadSection = createElement('div', {
-        className: 'mt-4 border-t pt-4'
+      // Action area
+      const actionArea = createElement('div', { className: mob ? 'space-y-3' : 'space-y-4' });
+
+      const btnRow = createElement('div', { className: 'flex gap-2.5' });
+
+      const calcBtn = createElement('button', {
+        className: `flex-1 rounded-xl bg-brand-800 dark:bg-brand-700 hover:bg-brand-900 dark:hover:bg-brand-600 text-white font-bold uppercase tracking-wider transition-colors duration-200 cursor-pointer shadow-panel hover:shadow-elevated flex items-center justify-center gap-2 active:scale-[0.98] ${mob ? 'py-3 text-sm' : 'py-3.5 text-sm'}`,
+        onClick: calculate,
+        style: { minHeight: '48px' }
       });
+      const calcIcon = createElement('span');
+      calcIcon.innerHTML = icons.calculator;
+      calcBtn.appendChild(calcIcon);
+      calcBtn.appendChild(createElement('span', {}, 'Hesapla'));
+      btnRow.appendChild(calcBtn);
 
-      fileUploadSection.appendChild(createLabel('Görsel/PDF Yükleme'));
-
-      const fileInputContainer = createElement('div', {
-        className: 'flex items-center gap-4'
+      const clearActionBtn = createElement('button', {
+        className: `rounded-xl border-2 border-red-300 dark:border-red-700/60 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-bold uppercase tracking-wider transition-colors duration-200 cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98] ${mob ? 'py-3 px-4 text-sm' : 'py-3.5 px-5 text-sm'}`,
+        onClick: clearFormData,
+        style: { minHeight: '48px' }
       });
+      const clearActionIcon = createElement('span');
+      clearActionIcon.innerHTML = icons.trash;
+      clearActionBtn.appendChild(clearActionIcon);
+      clearActionBtn.appendChild(createElement('span', { className: mob ? 'hidden' : '' }, 'Temizle'));
+      btnRow.appendChild(clearActionBtn);
 
-      // Create a file drop zone wrapper
-      const dropZone = createElement('div', {
-        className: 'border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl p-6 w-full text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-300 bg-white/50 dark:bg-slate-800/30 backdrop-blur-sm shadow-inner',
-        onClick: () => {
-          // Trigger file input click when the drop zone is clicked
-          fileInput.click();
-        },
-        onDragOver: (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          dropZone.classList.add('border-blue-500', 'dark:border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20');
-        },
-        onDragLeave: (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          dropZone.classList.remove('border-blue-500', 'dark:border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20');
-        },
-        onDrop: (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          dropZone.classList.remove('border-blue-500', 'dark:border-blue-400', 'bg-blue-50', 'dark:bg-blue-900/20');
+      actionArea.appendChild(btnRow);
 
-          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      // File upload
+      const uploadCard = createElement('div', {
+        className: `bg-white dark:bg-brand-800/80 border-2 border-dashed border-brand-200 dark:border-brand-600 text-center cursor-pointer hover:border-accent-400 dark:hover:border-accent-500 transition-colors duration-200 ${mob ? 'rounded-lg p-4' : 'rounded-xl p-6'}`,
+        onClick: () => fileInput.click(),
+        onDragOver: e => { e.preventDefault(); e.currentTarget.classList.add('border-accent-400', 'bg-accent-50/50'); },
+        onDragLeave: e => { e.preventDefault(); e.currentTarget.classList.remove('border-accent-400', 'bg-accent-50/50'); },
+        onDrop: e => {
+          e.preventDefault();
+          e.currentTarget.classList.remove('border-accent-400', 'bg-accent-50/50');
+          if (e.dataTransfer.files?.length) {
             const file = e.dataTransfer.files[0];
             if (file.type.startsWith('image/') || file.type === 'application/pdf') {
-              state.files = [file];
-              renderApp();
-              showNotification('Dosya yüklendi', 'success');
+              state.files = [file]; renderApp(); showNotification('Dosya yüklendi', 'success');
             }
           }
         }
       });
 
-      // Hidden file input
-      const fileInput = createElement('input', {
-        type: 'file',
-        accept: 'image/*',
-        className: 'hidden',
-        onChange: handleFileUpload
-      });
+      const fileInput = createElement('input', { type: 'file', accept: 'image/*', className: 'hidden', onChange: handleFileUpload });
+      const pdfInput = createElement('input', { type: 'file', accept: 'application/pdf', className: 'hidden', onChange: handleFileUpload });
 
-      const pdfInput = createElement('input', {
-        type: 'file',
-        accept: 'application/pdf',
-        className: 'hidden',
-        onChange: handleFileUpload
-      });
+      const uploadIconWrap = createElement('div', { className: 'flex justify-center mb-3 text-brand-300 dark:text-brand-500' });
+      uploadIconWrap.innerHTML = icons.cloudUpload;
+      uploadCard.appendChild(uploadIconWrap);
 
-      // Icons and text for the drop zone
-      const dropZoneContent = createElement('div', {
-        className: 'flex flex-col items-center'
-      });
+      uploadCard.appendChild(createElement('p', { className: 'text-sm font-medium text-brand-600 dark:text-brand-300 mb-1' }, 'Dosya yüklemek için tıklayın veya sürükleyin'));
+      uploadCard.appendChild(createElement('p', { className: 'text-xs text-brand-400 dark:text-brand-500' }, 'CTRL+V ile panodan yapıştırabilirsiniz'));
 
-      // Upload icon SVG
-      const uploadIcon = createElement('svg', {
-        className: 'w-10 h-10 mb-2 text-gray-400 dark:text-gray-500',
-        fill: 'none',
-        viewBox: '0 0 24 24',
-        stroke: 'currentColor',
-        innerHTML: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />'
-      });
-
-      const title = createElement('p', {
-        className: 'mb-1 text-sm font-semibold text-gray-700 dark:text-gray-300'
-      }, 'Dosya yüklemek için tıklayın veya sürükleyin');
-
-      const subtitle = createElement('p', {
-        className: 'text-xs text-gray-500 dark:text-gray-400'
-      }, 'CTRL+V ile panodan yapıştırabilirsiniz');
-
-      dropZoneContent.appendChild(uploadIcon);
-      dropZoneContent.appendChild(title);
-      dropZoneContent.appendChild(subtitle);
-
-      const pdfButton = createElement('button', {
+      const pdfLink = createElement('button', {
         type: 'button',
-        className: 'mt-2 text-xs text-blue-600 hover:text-blue-700 underline',
-        onClick: (e) => {
-          e.stopPropagation();
-          pdfInput.click();
-        }
-      }, 'PDF sec');
-      dropZoneContent.appendChild(pdfButton);
+        className: 'mt-2 text-xs text-accent-500 hover:text-accent-600 font-medium cursor-pointer',
+        onClick: e => { e.stopPropagation(); pdfInput.click(); }
+      }, 'PDF Seç');
+      uploadCard.appendChild(pdfLink);
 
-      // If there's a file already uploaded, show its information
       if (state.files.length > 0) {
         const fileInfo = createElement('div', {
-          className: 'mt-3 py-2 px-3 bg-gray-100 dark:bg-gray-700 rounded border border-gray-200 dark:border-gray-600 text-sm flex items-center'
+          className: 'mt-3 flex items-center justify-center gap-2 px-3 py-2 bg-brand-50 dark:bg-brand-700/40 rounded-lg text-sm'
         });
-
-        const fileIcon = createElement('svg', {
-          className: 'w-5 h-5 mr-2 text-blue-500 dark:text-blue-400',
-          fill: 'none',
-          viewBox: '0 0 24 24',
-          stroke: 'currentColor',
-          innerHTML: state.files[0].type.startsWith('image/')
-            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />'
-            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />'
+        const fIcon = createElement('span', { className: 'text-accent-500' });
+        fIcon.innerHTML = icons.photo;
+        fileInfo.appendChild(fIcon);
+        fileInfo.appendChild(createElement('span', { className: 'text-brand-600 dark:text-brand-300 truncate' }, state.files[0].name));
+        const removeFile = createElement('button', {
+          className: 'text-red-400 hover:text-red-500 cursor-pointer',
+          onClick: e => { e.stopPropagation(); state.files = []; renderApp(); }
         });
-
-        const fileName = createElement('span', {
-          className: 'flex-1 truncate'
-        }, state.files[0].name);
-
-        const clearButton = createElement('button', {
-          className: 'ml-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 focus:outline-none',
-          onClick: (e) => {
-            e.stopPropagation(); // Prevent triggering the drop zone click
-            state.files = [];
-            renderApp();
-          }
-        }, 'Sil');
-
-        fileInfo.appendChild(fileIcon);
-        fileInfo.appendChild(fileName);
-        fileInfo.appendChild(clearButton);
-
-        dropZoneContent.appendChild(fileInfo);
+        removeFile.innerHTML = icons.xMark;
+        fileInfo.appendChild(removeFile);
+        uploadCard.appendChild(fileInfo);
       }
 
-      dropZone.appendChild(dropZoneContent);
-      dropZone.appendChild(fileInput);
-      dropZone.appendChild(pdfInput);
-      fileInputContainer.appendChild(dropZone);
+      uploadCard.appendChild(fileInput);
+      uploadCard.appendChild(pdfInput);
+      actionArea.appendChild(uploadCard);
 
-      fileUploadSection.appendChild(fileInputContainer);
+      // Auto-save info
+      const saveInfo = createElement('div', {
+        className: 'flex items-center justify-center gap-2 text-xs text-brand-400 dark:text-brand-500'
+      });
+      const checkSpan = createElement('span', { className: 'text-emerald-500' });
+      checkSpan.innerHTML = icons.check;
+      saveInfo.appendChild(checkSpan);
+      saveInfo.appendChild(createElement('span', {}, 'Verileriniz otomatik olarak kaydedilir'));
+      actionArea.appendChild(saveInfo);
 
-      actionCardContent.appendChild(fileUploadSection);
-
-      // Veri Saklama Bilgisi
-      const dataInfo = createElement('div', {
-        className: 'mt-4 border-t pt-4 text-center text-sm text-sky-600 dark:text-sky-400'
-      }, '✓ Verileriniz tarayıcınızda otomatik olarak kaydedilir.');
-      actionCardContent.appendChild(dataInfo);
-
-      const actionCard = createCard(null, actionCardContent);
-
-      // Add the stretched action card to span 2 columns
-      actionCard.className += ' col-span-1 md:col-span-2';
-      container.appendChild(actionCard);
-
+      container.appendChild(actionArea);
       return container;
     }
 
+    // ─── RESULTS TAB ───
     function renderResultsTab() {
-      const container = createElement('div', {
-        className: 'grid grid-cols-1 md:grid-cols-2 gap-4'
-      });
+      const mob = window.innerWidth < 768;
+      const container = createElement('div', { className: `max-w-5xl mx-auto ${mob ? 'space-y-3' : 'space-y-5'}` });
 
-      // If there are selected alternatives
       if (state.finalAlternatives?.length > 0) {
-        const buttonsContainer = createElement('div', {
-          className: 'flex flex-col sm:flex-row gap-2 mt-4'
-        });
-
-        buttonsContainer.appendChild(createElement('button', {
-          className: 'w-full bg-gradient-to-r from-success-500 to-success-600 hover:from-success-600 hover:to-success-700 text-white font-bold py-3 px-6 rounded-xl shadow-soft dark:shadow-soft-dark hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 transform-gpu tracking-wide text-sm sm:text-base',
-          onClick: saveProcess
-        }, '💾 İşlem Olarak Kaydet'));
-
-        const selectedAltCard = createCard(null, [
+        const selectedCard = createCard('Seçilen Alternatifler', [
           renderSelectedAlternatives(),
-          buttonsContainer
+          (() => {
+            const saveBtn = createElement('button', {
+              className: `w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-colors duration-200 cursor-pointer active:scale-[0.98] ${mob ? 'mt-3 text-sm' : 'mt-4 text-sm'}`,
+              onClick: saveProcess,
+              style: { minHeight: '48px' }
+            });
+            const sIcon = createElement('span');
+            sIcon.innerHTML = icons.save;
+            saveBtn.appendChild(sIcon);
+            saveBtn.appendChild(createElement('span', {}, 'İşlem Olarak Kaydet'));
+            return saveBtn;
+          })()
         ]);
-
-        selectedAltCard.className += ' col-span-1 md:col-span-2';
-        container.appendChild(selectedAltCard);
+        container.appendChild(selectedCard);
       }
 
       if (state.result) {
-        // Results card
-        const resultsCard = createCard('Sonuçlar', renderResultsSection());
-        container.appendChild(resultsCard);
-
-        // Alternatives card if there are any
+        const resultsGrid = createElement('div', { className: `grid grid-cols-1 lg:grid-cols-2 ${mob ? 'gap-3' : 'gap-5'}` });
+        resultsGrid.appendChild(createCard('Genel Bilgiler', renderResultsSection()));
         if (state.result.alternatives?.length > 0) {
-          const alternativesCard = createCard('Olası Alternatifler', renderAlternativesSection());
-          container.appendChild(alternativesCard);
+          resultsGrid.appendChild(createCard('Olası Alternatifler', renderAlternativesSection()));
         }
+        container.appendChild(resultsGrid);
       } else {
-        // No results yet
-        const noResultsCard = createCard(null,
-          createElement('p', {}, 'Henüz hesaplama yapılmadı. Lütfen hesapla butonuna basınız.')
-        );
-        noResultsCard.className += ' col-span-1 md:col-span-2';
-        container.appendChild(noResultsCard);
+        const empty = createElement('div', {
+          className: `flex flex-col items-center justify-center text-center ${mob ? 'py-12' : 'py-20'}`
+        });
+        const emptyIcon = createElement('div', { className: 'text-brand-200 dark:text-brand-700 mb-3' });
+        emptyIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="${mob ? 'w-12 h-12' : 'w-16 h-16'}"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5"/></svg>`;
+        empty.appendChild(emptyIcon);
+        empty.appendChild(createElement('p', { className: `font-medium text-brand-500 dark:text-brand-400 ${mob ? 'text-xs' : 'text-sm'}` }, 'Henüz hesaplama yapılmadı'));
+        empty.appendChild(createElement('p', { className: 'text-xs text-brand-400 dark:text-brand-500 mt-1' }, 'Hesaplama formunu doldurup "Hesapla" butonuna basın'));
+        container.appendChild(empty);
       }
 
       return container;
@@ -1359,1043 +1034,517 @@
 
     function renderResultsSection() {
       if (!state.result) return null;
+      const container = createElement('div', { className: 'space-y-3' });
 
-      const container = createElement('div', {
-        className: 'bg-slate-50/80 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-sm overflow-x-auto shadow-inner'
-      });
-
-      const title = createElement('h3', {
-        className: 'font-semibold mb-3'
-      }, 'Genel Bilgiler');
-      container.appendChild(title);
-
-      const table = createElement('table', {
-        className: 'w-full'
-      });
-
-      const tbody = createElement('tbody');
-
-      // Add rows
-      const createRow = (label, value) => {
-        const row = createElement('tr', {
-          className: 'border-b dark:border-gray-600'
+      const addRow = (label, value, highlight = false) => {
+        const row = createElement('div', {
+          className: `flex items-center justify-between py-2.5 ${highlight ? '' : 'border-b border-brand-100 dark:border-brand-700/50'}`
         });
-
-        const labelCell = createElement('td', {
-          className: 'py-2 font-medium'
-        }, label);
-        row.appendChild(labelCell);
-
-        const valueCell = createElement('td', {
-          className: 'py-2 text-right'
-        }, value);
-        row.appendChild(valueCell);
-
+        row.appendChild(createElement('span', { className: 'text-sm text-brand-500 dark:text-brand-400' }, label));
+        row.appendChild(createElement('span', {
+          className: `text-sm font-bold font-mono ${highlight ? 'text-accent-600 dark:text-accent-400' : 'text-brand-800 dark:text-white'}`
+        }, value));
         return row;
       };
 
-      tbody.appendChild(createRow('Kullanılan Emsal', state.result.usedEmsal.toFixed(2)));
-      tbody.appendChild(createRow('Toplam İnşaat Alanı', `${state.result.totalArea.toFixed(2)} m²`));
+      container.appendChild(addRow('Kullanılan Emsal', state.result.usedEmsal.toFixed(2), true));
+      container.appendChild(addRow('Toplam İnşaat Alanı', `${state.result.totalArea.toFixed(2)} m²`));
 
-      // Show karma areas if exist
       if (state.karmaList.length > 0) {
         const totalKarmaNet = state.karmaList.reduce((a, k) => a + k.netAlanTotal, 0);
-        tbody.appendChild(createRow('Toplam Karma Alan (Net)', `${totalKarmaNet.toFixed(2)} m²`));
-        tbody.appendChild(createRow('Kalan Alan (Net)', `${state.result.remainingNetArea.toFixed(2)} m²`));
-        tbody.appendChild(createRow('Kalan Alan (Brüt)', `${state.result.remainingBrutArea.toFixed(2)} m²`));
+        container.appendChild(addRow('Toplam Karma Alan (Net)', `${totalKarmaNet.toFixed(2)} m²`));
+        container.appendChild(addRow('Kalan Alan (Net)', `${state.result.remainingNetArea.toFixed(2)} m²`));
+        container.appendChild(addRow('Kalan Alan (Brüt)', `${state.result.remainingBrutArea.toFixed(2)} m²`));
       }
 
-      tbody.appendChild(createRow('Kat Başına Alan', `${state.result.floorArea.toFixed(2)} m²`));
-
-      table.appendChild(tbody);
-      container.appendChild(table);
-
+      container.appendChild(addRow('Kat Başına Alan', `${state.result.floorArea.toFixed(2)} m²`));
       return container;
     }
 
     function renderAlternativesSection() {
       if (!state.result?.alternatives) return null;
+      const container = createElement('div', { className: 'space-y-4' });
 
-      const container = createElement('div');
-
-      // Show Selected Button at the top
-      const showSelectedButton = createElement('button', {
-        className: 'w-full mb-6 bg-gradient-to-r from-success-500 to-success-600 hover:from-success-600 hover:to-success-700 text-white font-bold py-3 px-6 rounded-xl shadow-soft dark:shadow-soft-dark hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 transform-gpu tracking-wide',
-        onClick: showSelectedAlternatives
-      }, '✓ Seçili Alternatifleri Görüntüle');
-      container.appendChild(showSelectedButton);
-
-      // Color legend container
-      const legendContainer = createElement('div', {
-        className: 'mb-3 flex flex-wrap gap-2'
+      const mobAlt = window.innerWidth < 768;
+      const showBtn = createElement('button', {
+        className: `w-full flex items-center justify-center gap-2 rounded-lg bg-brand-800 dark:bg-brand-700 hover:bg-brand-900 dark:hover:bg-brand-600 text-white font-semibold transition-colors duration-200 cursor-pointer active:scale-[0.98] ${mobAlt ? 'py-3 text-sm' : 'py-2.5 text-sm'}`,
+        onClick: showSelectedAlternatives,
+        style: { minHeight: '48px' }
       });
+      const showIcon = createElement('span');
+      showIcon.innerHTML = icons.check;
+      showBtn.appendChild(showIcon);
+      showBtn.appendChild(createElement('span', {}, 'Seçili Alternatifleri Görüntüle'));
+      container.appendChild(showBtn);
 
-      // Daire tiplerine göre renk sınıfları
+      const quickSaveBtn = createElement('button', {
+        className: `w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-colors duration-200 cursor-pointer active:scale-[0.98] ${mobAlt ? 'py-3 text-sm' : 'py-2.5 text-sm'}`,
+        onClick: quickSaveSelected,
+        style: { minHeight: '48px' }
+      });
+      const qsIcon = createElement('span');
+      qsIcon.innerHTML = icons.save;
+      quickSaveBtn.appendChild(qsIcon);
+      quickSaveBtn.appendChild(createElement('span', {}, 'Seçilenleri Kaydet'));
+      container.appendChild(quickSaveBtn);
+
+      // Type colors
       const typeColors = {
-        "1+1": "bg-pink-50 hover:bg-pink-100 dark:bg-pink-900/30 dark:hover:bg-pink-900/50 text-gray-800 dark:text-white",
-        "2+0": "bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-gray-800 dark:text-white",
-        "2+1": "bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 text-gray-800 dark:text-white",
-        "3+1": "bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 text-gray-800 dark:text-white",
-        "4+1": "bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/50 text-gray-800 dark:text-white",
-        "TİCARİ": "bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-gray-800 dark:text-white"
+        "1+1": "bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-800/50",
+        "2+0": "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/50",
+        "2+1": "bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/50",
+        "3+1": "bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800/50",
+        "4+1": "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/50",
+        "TİCARİ": "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/50"
       };
 
-      // Create legend items
-      Object.entries(typeColors).forEach(([type, baseColor]) => {
-        const colorClasses = baseColor.split(' ');
-        const bgColorClass = colorClasses[0];
-        const legendItem = createElement('div', {
-          className: `px-3 py-1 rounded-full text-xs font-medium ${bgColorClass} ${baseColor} border border-gray-200 dark:border-gray-500`
-        }, type);
-        legendContainer.appendChild(legendItem);
+      // Legend
+      const legend = createElement('div', { className: 'flex flex-wrap gap-2' });
+      Object.entries(typeColors).forEach(([type, cls]) => {
+        legend.appendChild(createElement('span', {
+          className: `inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${cls}`
+        }, type));
       });
+      container.appendChild(legend);
 
-      container.appendChild(legendContainer);
-
-      // Table container for overflow
-      const tableContainer = createElement('div', {
-        className: 'overflow-x-auto -mx-3 md:mx-0 px-3 md:px-0'
-      });
-
-      // Create table
-      const table = createElement('table', {
-        className: 'w-full border-collapse text-xs sm:text-sm'
-      });
-
-      // Table header
+      // Table
+      const mobTbl = window.innerWidth < 768;
+      const tableWrap = createElement('div', { className: 'overflow-x-auto rounded-lg border border-brand-200 dark:border-brand-700/50 -mx-0.5' });
+      const table = createElement('table', { className: `w-full ${mobTbl ? 'text-xs' : 'text-sm'}` });
       const thead = createElement('thead');
       const headerRow = createElement('tr', {
-        className: 'bg-slate-100/80 dark:bg-slate-700/80 border-b border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 backdrop-blur-sm'
+        className: 'bg-brand-50 dark:bg-brand-800/60 text-brand-500 dark:text-brand-400'
       });
-
-      // Add headers
-      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 w-10' }, ''));
-      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-gray-700 dark:text-gray-200' }, 'Daire Tipi'));
-      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-gray-700 dark:text-gray-200' }, 'Toplam Daire'));
-      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-gray-700 dark:text-gray-200' }, 'Kat Başına'));
-      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-gray-700 dark:text-gray-200' }, 'Net (m²)'));
-      headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-gray-700 dark:text-gray-200' }, 'Brüt (m²)'));
-
+      ['', 'Tip', 'Toplam', 'Kat/B.', 'Net m²', 'Brüt m²'].forEach(h => {
+        headerRow.appendChild(createElement('th', {
+          className: `text-[10px] font-bold uppercase tracking-wider text-left ${mobTbl ? 'px-2 py-2' : 'px-3 py-2.5'}`
+        }, h));
+      });
       thead.appendChild(headerRow);
       table.appendChild(thead);
 
-      // Table body
       const tbody = createElement('tbody');
-
-      // Create rows for each alternative
       state.result.alternatives.forEach((alt, i) => {
-        const allColorClasses = typeColors[alt.type];
-
+        const isSelected = state.selectedAltIndexes.includes(i);
+        const rowColor = typeColors[alt.type] || '';
         const row = createElement('tr', {
-          className: `border-b dark:border-gray-600 ${allColorClasses} cursor-pointer text-gray-700 dark:text-gray-100`,
+          className: `border-t border-brand-100 dark:border-brand-700/40 cursor-pointer transition-colors duration-150 ${isSelected ? 'ring-2 ring-accent-400 ring-inset' : ''} ${rowColor}`,
           onClick: () => toggleAlternativeSelection(i)
         });
 
-        // Checkbox cell
-        const checkCell = createElement('td', { className: 'px-2 py-1 text-center' });
-        const checkbox = createElement('input', {
-          type: 'checkbox',
-          className: 'cursor-pointer w-4 h-4',
-          checked: state.selectedAltIndexes.includes(i),
-          onClick: (e) => e.stopPropagation(),
-          onChange: () => toggleAlternativeSelection(i)
-        });
-        checkCell.appendChild(checkbox);
+        const cellPad = mobTbl ? 'px-2 py-2' : 'px-3 py-2.5';
+        const checkCell = createElement('td', { className: cellPad });
+        checkCell.appendChild(createElement('input', {
+          type: 'checkbox', className: 'cursor-pointer rounded border-brand-300',
+          checked: isSelected,
+          onClick: e => e.stopPropagation(),
+          onChange: () => toggleAlternativeSelection(i),
+          style: { width: '18px', height: '18px' }
+        }));
         row.appendChild(checkCell);
 
-        // Data cells
-        row.appendChild(createElement('td', { className: 'px-2 py-1 font-medium text-gray-800 dark:text-gray-100' }, alt.type));
-        row.appendChild(createElement('td', { className: 'px-2 py-1 text-gray-800 dark:text-gray-100' }, alt.totalUnits));
-        row.appendChild(createElement('td', { className: 'px-2 py-1 text-gray-800 dark:text-gray-100' }, alt.unitsPerFloor));
-        row.appendChild(createElement('td', { className: 'px-2 py-1 text-gray-800 dark:text-gray-100' }, alt.netArea));
-        row.appendChild(createElement('td', { className: 'px-2 py-1 text-gray-800 dark:text-gray-100' }, alt.brutArea));
+        row.appendChild(createElement('td', { className: `${cellPad} font-bold` }, alt.type));
+        row.appendChild(createElement('td', { className: `${cellPad} font-mono` }, alt.totalUnits));
+        row.appendChild(createElement('td', { className: `${cellPad} font-mono` }, alt.unitsPerFloor));
+        row.appendChild(createElement('td', { className: `${cellPad} font-mono` }, alt.netArea));
+        row.appendChild(createElement('td', { className: `${cellPad} font-mono` }, alt.brutArea));
 
         tbody.appendChild(row);
       });
-
       table.appendChild(tbody);
-      tableContainer.appendChild(table);
-      container.appendChild(tableContainer);
+      tableWrap.appendChild(table);
+      container.appendChild(tableWrap);
 
       return container;
     }
 
     function renderSelectedAlternatives() {
       if (!state.finalAlternatives) return null;
+      const mobSel = window.innerWidth < 768;
+      const container = createElement('div', { className: mobSel ? 'space-y-3' : 'space-y-4' });
 
-      const container = createElement('div');
-
-      const title = createElement('h3', {
-        className: 'text-xl font-bold mb-4 text-gray-900 dark:text-white'
-      }, 'Seçilen Alternatifler');
-      container.appendChild(title);
-
-      // Kat Sayısı Input Group
-      const katInputGroup = createElement('div', {
-        className: 'flex items-center mb-4'
-      });
-
-      katInputGroup.appendChild(createLabel('Kat Sayısını Girin'));
-
-      const katInputContainer = createElement('div', {
-        className: 'ml-2 w-24'
-      });
-
-      const katInput = createElement('input', {
-        type: 'number',
-        min: '1',
-        className: 'border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded p-2 w-full text-base',
+      // Kat input
+      const katRow = createElement('div', { className: 'flex items-center gap-3' });
+      katRow.appendChild(createElement('label', {
+        className: `font-semibold uppercase tracking-wider text-brand-500 dark:text-brand-400 ${mobSel ? 'text-[11px]' : 'text-xs'}`
+      }, 'Kat Sayısı'));
+      katRow.appendChild(createElement('input', {
+        type: 'number', min: '1',
+        className: `w-20 rounded-lg border border-brand-200 dark:border-brand-600 bg-white dark:bg-brand-800 text-brand-800 dark:text-brand-100 font-mono font-bold text-center focus:outline-none focus:ring-2 focus:ring-accent-400/40 ${mobSel ? 'px-3 py-2.5 text-base' : 'px-3 py-2 text-sm'}`,
         value: state.kat,
-        onChange: e => {
-          state.kat = e.target.value;
-          renderApp();
+        onChange: e => { state.kat = e.target.value; renderApp(); },
+        style: { minHeight: mobSel ? '44px' : '38px' }
+      }));
+      container.appendChild(katRow);
+
+      // Table
+      const tableWrap = createElement('div', { className: 'overflow-x-auto rounded-lg border border-brand-200 dark:border-brand-700/50' });
+      const table = createElement('table', { className: `w-full ${mobSel ? 'text-xs' : 'text-sm'}` });
+      const thead = createElement('thead');
+      const headerRow = createElement('tr', { className: 'bg-brand-50 dark:bg-brand-800/60 text-brand-500 dark:text-brand-400' });
+
+      const cols = [
+        { id: 'alternative', label: '#' },
+        { id: 'daireTipi', label: 'Tip' },
+        { id: 'toplamDaire', label: 'Toplam' },
+        { id: 'katBasina', label: 'Kat/B.' },
+        { id: 'net', label: 'Net m²' },
+        { id: 'brut', label: 'Brüt m²' },
+      ];
+      const selCellPad = mobSel ? 'px-2 py-2' : 'px-3 py-2.5';
+      cols.forEach(c => {
+        if (!state.hiddenCols[c.id]) {
+          headerRow.appendChild(createElement('th', {
+            className: `${selCellPad} text-[10px] font-bold uppercase tracking-wider text-center`
+          }, c.label));
         }
       });
-
-      katInputContainer.appendChild(katInput);
-      katInputGroup.appendChild(katInputContainer);
-      container.appendChild(katInputGroup);
-
-      // Table container
-      const tableContainer = createElement('div', {
-        className: 'overflow-x-auto mb-4'
-      });
-
-      // Create table
-      const table = createElement('table', {
-        className: 'w-full border-collapse text-xs sm:text-sm'
-      });
-
-      // Table header
-      const thead = createElement('thead');
-      const headerRow = createElement('tr', {
-        className: 'bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600 text-gray-700 dark:text-gray-200'
-      });
-
-      // Add column headers based on visibility settings
-      if (!state.hiddenCols.alternative) {
-        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Alternatif'));
-      }
-      if (!state.hiddenCols.daireTipi) {
-        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Daire Tipi'));
-      }
-      if (!state.hiddenCols.toplamDaire) {
-        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Toplam Daire'));
-      }
-      if (!state.hiddenCols.katBasina) {
-        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Kat Başına'));
-      }
-      if (!state.hiddenCols.net) {
-        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Net (m²)'));
-      }
-      if (!state.hiddenCols.brut) {
-        headerRow.appendChild(createElement('th', { className: 'px-2 py-1 text-center text-gray-700 dark:text-gray-200' }, 'Brüt (m²)'));
-      }
-
       thead.appendChild(headerRow);
       table.appendChild(thead);
 
-      // Table body
       const tbody = createElement('tbody');
-
-      // Add table rows
       state.finalAlternatives.forEach((alt, i) => {
         const row = createElement('tr', {
-          className: 'border-b dark:border-gray-600 text-gray-700 dark:text-gray-100'
+          className: 'border-t border-brand-100 dark:border-brand-700/40 text-brand-700 dark:text-brand-200'
         });
-
-        // Add cells based on visibility settings
-        if (!state.hiddenCols.alternative) {
-          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, i + 1));
-        }
-        if (!state.hiddenCols.daireTipi) {
-          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, alt.type));
-        }
-        if (!state.hiddenCols.toplamDaire) {
-          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, alt.totalUnits));
-        }
-        if (!state.hiddenCols.katBasina) {
-          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, alt.unitsPerFloor));
-        }
-        if (!state.hiddenCols.net) {
-          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, alt.netArea));
-        }
-        if (!state.hiddenCols.brut) {
-          row.appendChild(createElement('td', { className: 'px-2 py-1 text-center text-gray-800 dark:text-gray-100' }, alt.brutArea));
-        }
-
+        if (!state.hiddenCols.alternative) row.appendChild(createElement('td', { className: `${selCellPad} text-center font-mono font-bold` }, i + 1));
+        if (!state.hiddenCols.daireTipi) row.appendChild(createElement('td', { className: `${selCellPad} text-center font-bold` }, alt.type));
+        if (!state.hiddenCols.toplamDaire) row.appendChild(createElement('td', { className: `${selCellPad} text-center font-mono` }, alt.totalUnits));
+        if (!state.hiddenCols.katBasina) row.appendChild(createElement('td', { className: `${selCellPad} text-center font-mono` }, alt.unitsPerFloor));
+        if (!state.hiddenCols.net) row.appendChild(createElement('td', { className: `${selCellPad} text-center font-mono` }, alt.netArea));
+        if (!state.hiddenCols.brut) row.appendChild(createElement('td', { className: `${selCellPad} text-center font-mono` }, alt.brutArea));
         tbody.appendChild(row);
       });
-
       table.appendChild(tbody);
-      tableContainer.appendChild(table);
-      container.appendChild(tableContainer);
+      tableWrap.appendChild(table);
+      container.appendChild(tableWrap);
 
-      // Column visibility controls
-      const visibilityControls = createElement('div', {
-        className: 'flex flex-wrap gap-3 text-sm bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg'
+      // Column visibility
+      const visRow = createElement('div', {
+        className: `flex flex-wrap items-center gap-2 rounded-lg bg-brand-50 dark:bg-brand-800/40 ${mobSel ? 'px-2.5 py-2 text-[11px] gap-y-1.5' : 'px-3 py-2.5 text-xs gap-3'}`
       });
-
-      visibilityControls.appendChild(createElement('span', {
-        className: 'font-medium'
-      }, 'Sütunları Gizle/Göster:'));
-
-      const checkboxContainer = createElement('div', {
-        className: 'flex flex-wrap gap-3'
+      visRow.appendChild(createElement('span', { className: 'font-semibold text-brand-500 dark:text-brand-400 uppercase tracking-wider' }, 'Sütunlar:'));
+      cols.forEach(c => {
+        const lbl = createElement('label', { className: 'inline-flex items-center gap-1 text-brand-600 dark:text-brand-300 cursor-pointer' });
+        lbl.appendChild(createElement('input', {
+          type: 'checkbox', className: 'rounded border-brand-300 cursor-pointer',
+          checked: !state.hiddenCols[c.id],
+          onChange: () => { state.hiddenCols[c.id] = !state.hiddenCols[c.id]; renderApp(); },
+          style: { width: '16px', height: '16px' }
+        }));
+        lbl.appendChild(createElement('span', {}, c.label));
+        visRow.appendChild(lbl);
       });
-
-      // Column toggle checkboxes
-      const createColumnToggle = (id, label) => {
-        const container = createElement('label', {
-          className: 'inline-flex items-center'
-        });
-
-        const checkbox = createElement('input', {
-          type: 'checkbox',
-          className: 'mr-1',
-          checked: !state.hiddenCols[id],
-          onChange: () => {
-            state.hiddenCols[id] = !state.hiddenCols[id];
-            renderApp();
-          }
-        });
-
-        container.appendChild(checkbox);
-        container.appendChild(document.createTextNode(label));
-
-        return container;
-      };
-
-      checkboxContainer.appendChild(createColumnToggle('alternative', 'Alternatif'));
-      checkboxContainer.appendChild(createColumnToggle('daireTipi', 'Daire Tipi'));
-      checkboxContainer.appendChild(createColumnToggle('toplamDaire', 'Toplam Daire'));
-      checkboxContainer.appendChild(createColumnToggle('katBasina', 'Kat Başına'));
-      checkboxContainer.appendChild(createColumnToggle('net', 'Net (m²)'));
-      checkboxContainer.appendChild(createColumnToggle('brut', 'Brüt (m²)'));
-
-      visibilityControls.appendChild(checkboxContainer);
-      container.appendChild(visibilityControls);
+      container.appendChild(visRow);
 
       return container;
     }
 
-    // Tema renkleri tanımları
+    // ─── HISTORY TAB ───
     const historyThemes = {
-      blue: {
-        bg: 'bg-blue-50 dark:bg-blue-900/20',
-        border: 'border-blue-200 dark:border-blue-700',
-        title: 'text-blue-800 dark:text-blue-200',
-        text: 'text-blue-900 dark:text-blue-100',
-        button: 'bg-blue-600 hover:bg-blue-700',
-        accent: 'border-blue-400'
-      },
-      green: {
-        bg: 'bg-green-50 dark:bg-green-900/20',
-        border: 'border-green-200 dark:border-green-700',
-        title: 'text-green-800 dark:text-green-200',
-        text: 'text-green-900 dark:text-green-100',
-        button: 'bg-green-600 hover:bg-green-700',
-        accent: 'border-green-400'
-      },
-      purple: {
-        bg: 'bg-purple-50 dark:bg-purple-900/20',
-        border: 'border-purple-200 dark:border-purple-700',
-        title: 'text-purple-800 dark:text-purple-200',
-        text: 'text-purple-900 dark:text-purple-100',
-        button: 'bg-purple-600 hover:bg-purple-700',
-        accent: 'border-purple-400'
-      },
-      orange: {
-        bg: 'bg-orange-50 dark:bg-orange-900/20',
-        border: 'border-orange-200 dark:border-orange-700',
-        title: 'text-orange-800 dark:text-orange-200',
-        text: 'text-orange-900 dark:text-orange-100',
-        button: 'bg-orange-600 hover:bg-orange-700',
-        accent: 'border-orange-400'
-      },
-      red: {
-        bg: 'bg-red-50 dark:bg-red-900/20',
-        border: 'border-red-200 dark:border-red-700',
-        title: 'text-red-800 dark:text-red-200',
-        text: 'text-red-900 dark:text-red-100',
-        button: 'bg-red-600 hover:bg-red-700',
-        accent: 'border-red-400'
-      }
+      blue: { bg: 'bg-blue-50/50 dark:bg-blue-900/10', border: 'border-blue-200/70 dark:border-blue-800/40', title: 'text-blue-700 dark:text-blue-300', text: 'text-blue-900 dark:text-blue-100', accent: 'border-blue-300' },
+      green: { bg: 'bg-emerald-50/50 dark:bg-emerald-900/10', border: 'border-emerald-200/70 dark:border-emerald-800/40', title: 'text-emerald-700 dark:text-emerald-300', text: 'text-emerald-900 dark:text-emerald-100', accent: 'border-emerald-300' },
+      purple: { bg: 'bg-violet-50/50 dark:bg-violet-900/10', border: 'border-violet-200/70 dark:border-violet-800/40', title: 'text-violet-700 dark:text-violet-300', text: 'text-violet-900 dark:text-violet-100', accent: 'border-violet-300' },
+      orange: { bg: 'bg-orange-50/50 dark:bg-orange-900/10', border: 'border-orange-200/70 dark:border-orange-800/40', title: 'text-orange-700 dark:text-orange-300', text: 'text-orange-900 dark:text-orange-100', accent: 'border-orange-300' },
+      red: { bg: 'bg-red-50/50 dark:bg-red-900/10', border: 'border-red-200/70 dark:border-red-800/40', title: 'text-red-700 dark:text-red-300', text: 'text-red-900 dark:text-red-100', accent: 'border-red-300' },
     };
 
     function renderHistoryTab() {
-      // Ensure history is synced with processHistoryData
       state.history = getProcessHistory();
-
-      const container = createElement('div', {
-        className: 'mt-4'
-      });
+      const mob = window.innerWidth < 768;
+      const container = createElement('div', { className: `max-w-5xl mx-auto ${mob ? 'space-y-3' : 'space-y-5'}` });
 
       if (state.history.length === 0) {
-        const emptyCard = createCard(null,
-          createElement('p', {
-            className: 'text-center py-4'
-          }, 'Henüz kaydedilmiş işlem bulunmamaktadır.')
-        );
-        container.appendChild(emptyCard);
+        const empty = createElement('div', { className: `flex flex-col items-center justify-center text-center ${mob ? 'py-12' : 'py-20'}` });
+        const emptyIcon = createElement('div', { className: 'text-brand-200 dark:text-brand-700 mb-3' });
+        emptyIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="${mob ? 'w-12 h-12' : 'w-16 h-16'}"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>`;
+        empty.appendChild(emptyIcon);
+        empty.appendChild(createElement('p', { className: `font-medium text-brand-500 dark:text-brand-400 ${mob ? 'text-xs' : 'text-sm'}` }, 'Henüz kaydedilmiş işlem bulunmamaktadır'));
+        container.appendChild(empty);
         return container;
       }
 
       const currentTheme = historyThemes[state.historyTheme] || historyThemes.blue;
 
-      // History header
-      const historyHeader = createElement('div', {
-        className: 'flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3'
+      // Header
+      const headerRow = createElement('div', { className: `flex flex-col sm:flex-row justify-between items-start sm:items-center ${mob ? 'gap-2.5' : 'gap-4'}` });
+
+      const titleArea = createElement('div', { className: 'flex items-center gap-3 flex-wrap' });
+      titleArea.appendChild(createElement('h3', { className: `font-bold text-brand-800 dark:text-white ${mob ? 'text-base' : 'text-lg'}` }, `Kayıtlı İşlemler (${state.history.length})`));
+
+      // Theme selector
+      const themeRow = createElement('div', { className: 'flex items-center gap-2' });
+      themeRow.appendChild(createElement('span', { className: 'text-[10px] font-semibold uppercase tracking-widest text-brand-400' }, 'Tema'));
+      const themeDots = createElement('div', { className: 'flex gap-1' });
+      const themeColorMap = { blue: 'bg-blue-500', green: 'bg-emerald-500', purple: 'bg-violet-500', orange: 'bg-orange-500', red: 'bg-red-500' };
+      Object.keys(historyThemes).forEach(key => {
+        themeDots.appendChild(createElement('button', {
+          className: `w-5 h-5 rounded-full transition-all duration-200 cursor-pointer ${themeColorMap[key]} ${state.historyTheme === key ? 'ring-2 ring-offset-2 ring-offset-white dark:ring-offset-brand-900 ring-brand-400 scale-110' : 'opacity-50 hover:opacity-80'}`,
+          onClick: () => { state.historyTheme = key; saveToStorage(); renderApp(); }
+        }));
       });
+      themeRow.appendChild(themeDots);
+      titleArea.appendChild(themeRow);
+      headerRow.appendChild(titleArea);
 
-      const titleRow = createElement('div', {
-        className: 'flex flex-col sm:flex-row items-start sm:items-center gap-3'
-      });
+      // Action buttons
+      const actions = createElement('div', { className: `flex ${mob ? 'gap-1.5' : 'gap-2'}` });
 
-      const title = createElement('h2', {
-        className: 'text-2xl font-bold text-gray-900 dark:text-gray-100'
-      }, 'Kayıtlı İşlemler');
-      titleRow.appendChild(title);
-
-      // Tema seçici
-      const themeSelector = createElement('div', {
-        className: 'flex items-center gap-2'
-      });
-
-      const themeLabel = createElement('span', {
-        className: 'text-sm font-medium text-gray-700 dark:text-gray-300'
-      }, 'Tema:');
-      themeSelector.appendChild(themeLabel);
-
-      const themeButtons = createElement('div', {
-        className: 'flex gap-1'
-      });
-
-      const themeColors = {
-        blue: 'bg-blue-500',
-        green: 'bg-green-500',
-        purple: 'bg-purple-500',
-        orange: 'bg-orange-500',
-        red: 'bg-red-500'
+      const makeActionBtn = (label, icon, cls, onClick) => {
+        const btn = createElement('button', {
+          className: `inline-flex items-center gap-1.5 rounded-lg font-semibold transition-colors duration-200 cursor-pointer ${mob ? 'px-2.5 py-2 text-[11px]' : 'px-3 py-2 text-xs'} ${cls}`,
+          onClick,
+          style: { minHeight: mob ? '40px' : '36px' }
+        });
+        const ic = createElement('span');
+        ic.innerHTML = icon;
+        btn.appendChild(ic);
+        if (!mob) btn.appendChild(createElement('span', {}, label));
+        return btn;
       };
 
-      Object.keys(historyThemes).forEach(themeKey => {
-        const themeButton = createElement('button', {
-          className: `w-8 h-8 rounded-full border-2 transition-all ${state.historyTheme === themeKey
-            ? `${themeColors[themeKey]} border-white dark:border-gray-800 shadow-lg scale-110 ring-2 ring-offset-2 ring-opacity-50`
-            : `${themeColors[themeKey]} opacity-60 hover:opacity-100 border-transparent hover:scale-105`
-            }`,
-          title: themeKey.charAt(0).toUpperCase() + themeKey.slice(1),
-          onClick: () => {
-            state.historyTheme = themeKey;
-            saveToStorage();
-            renderApp();
-          }
-        });
-        themeButtons.appendChild(themeButton);
+      actions.appendChild(makeActionBtn('Dışa Aktar', icons.download, 'bg-brand-100 dark:bg-brand-700 text-brand-600 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-600 border border-brand-200 dark:border-brand-600', exportData));
+
+      const importInput = createElement('input', { type: 'file', accept: 'application/json', className: 'hidden', onChange: importData });
+      actions.appendChild(importInput);
+      actions.appendChild(makeActionBtn('İçe Aktar', icons.upload, 'bg-brand-100 dark:bg-brand-700 text-brand-600 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-600 border border-brand-200 dark:border-brand-600', () => importInput.click()));
+
+      actions.appendChild(makeActionBtn('Temizle', icons.trash, 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-700/50', clearHistory));
+
+      headerRow.appendChild(actions);
+      container.appendChild(headerRow);
+
+      // Split layout: Image + Entries
+      const splitWrap = createElement('div', {
+        className: mob ? 'space-y-3' : 'grid grid-cols-2 gap-5',
+        style: mob ? {} : { minHeight: '500px' }
       });
 
-      themeSelector.appendChild(themeButtons);
-      titleRow.appendChild(themeSelector);
-      historyHeader.appendChild(titleRow);
-
-      // Action buttons container
-      const actionButtons = createElement('div', {
-        className: 'grid grid-cols-3 gap-2 w-full sm:flex sm:flex-wrap sm:gap-2 sm:w-auto'
-      });
-
-      // Export button
-      const exportButton = createElement('button', {
-        className: 'text-anthracite-700 hover:text-white font-medium text-sm px-4 py-2 rounded-lg bg-anthracite-100 hover:bg-anthracite-600 transition-all duration-200 dark:text-anthracite-200 dark:bg-anthracite-700 dark:hover:bg-anthracite-600 border border-anthracite-400',
-        onClick: exportData
-      }, '📥 Dışa Aktar');
-      actionButtons.appendChild(exportButton);
-
-      // Import button (with hidden file input)
-      const importFileInput = createElement('input', {
-        type: 'file',
-        accept: 'application/json',
-        className: 'hidden',
-        onChange: importData
-      });
-
-      const importButton = createElement('button', {
-        className: 'text-success-700 hover:text-white font-medium text-sm px-4 py-2 rounded-lg bg-success-100 hover:bg-success-600 transition-all duration-200 dark:text-success-200 dark:bg-success-800 dark:hover:bg-success-600 border border-success-400',
-        onClick: () => importFileInput.click()
-      }, '📤 İçe Aktar');
-      actionButtons.appendChild(importButton);
-      actionButtons.appendChild(importFileInput);
-
-      // Clear history button
-      const clearButton = createElement('button', {
-        className: 'text-primary-700 hover:text-white font-medium text-sm px-4 py-2 rounded-lg bg-primary-100 hover:bg-primary-600 transition-all duration-200 dark:text-primary-200 dark:bg-primary-800 dark:hover:bg-primary-600 border border-primary-400',
-        onClick: clearHistory
-      }, '🗑️ Geçmişi Temizle');
-      actionButtons.appendChild(clearButton);
-
-      historyHeader.appendChild(actionButtons);
-      container.appendChild(historyHeader);
-
-      // Split pane container - responsive
-      const isMobile = window.innerWidth < 768;
-      const splitContainer = createElement('div', {
-        className: isMobile ? 'flex flex-col gap-4' : 'split-pane-container',
-        style: isMobile ? { width: '100%' } : {
-          width: state.containerDimensions.width,
-          height: state.containerDimensions.height
-        }
-      });
-
-      // Left panel (Image container)
-      const leftPanel = createElement('div', {
-        className: isMobile ? 'w-full' : 'split-pane-item',
-        style: isMobile ? {} : { width: '50%', padding: '12px', borderRight: '2px solid #eaeaea' }
-      });
-
+      // Image panel
       const imagePanel = createElement('div', {
-        className: `bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600 ${isMobile ? 'h-64 min-h-64' : 'h-full'}`
+        className: `bg-white dark:bg-brand-800/80 border border-brand-200 dark:border-brand-700/50 shadow-panel overflow-hidden flex flex-col ${mob ? 'rounded-lg' : 'rounded-xl'}`,
+        style: mob ? { height: '200px' } : { height: '100%', minHeight: '500px' }
       });
 
-      // If there's an image, display it; otherwise show placeholder
       if (state.history[0]?.image) {
-        const imageType = state.history[0].image.startsWith('data:application/pdf') ? 'pdf' : 'image';
-
-        if (imageType === 'pdf') {
-          const pdfContainer = createElement('div', {
-            className: 'w-full h-full flex flex-col',
-            style: {
-              position: 'relative',
-              overflow: 'hidden'
-            }
-          });
-
-          // PDF wrapper with overflow control for dragging
-          const pdfWrapper = createElement('div', {
-            className: 'flex-1 w-full overflow-auto',
-            style: {
-              position: 'relative'
-            }
-          });
-
+        const isImagePdf = state.history[0].image.startsWith('data:application/pdf');
+        if (isImagePdf) {
+          const pdfWrap = createElement('div', { className: 'flex-1 overflow-auto', style: { position: 'relative' } });
           const pdfContent = createElement('div', {
-            style: {
-              transform: `scale(${state.zoom / 100})`,
-              transformOrigin: 'top left',
-              transition: 'transform 0.1s ease-out',
-              width: state.zoom > 100 ? `${state.zoom}%` : '100%',
-              height: state.zoom > 100 ? `${state.zoom}%` : '100%',
-              position: 'relative'
-            }
+            style: { transform: `scale(${state.zoom / 100})`, transformOrigin: 'top left', transition: 'transform 0.1s ease-out', width: state.zoom > 100 ? `${state.zoom}%` : '100%', height: state.zoom > 100 ? `${state.zoom}%` : '100%' }
           });
-
-          const iframe = createElement('iframe', {
+          pdfContent.appendChild(createElement('iframe', {
             src: `${state.history[0].image}#toolbar=0&view=FitH`,
             type: 'application/pdf',
-            className: 'w-full',
-            style: {
-              border: 'none',
-              width: '100%',
-              height: '100vh',
-              display: 'block',
-              background: 'white'
-            }
-          });
-
-          pdfContent.appendChild(iframe);
-          pdfWrapper.appendChild(pdfContent);
-          pdfContainer.appendChild(pdfWrapper);
-
-          // Make PDF wrapper draggable
-          setupDraggable(pdfWrapper);
-
-          imagePanel.appendChild(pdfContainer);
-
+            style: { border: 'none', width: '100%', height: '100vh', display: 'block', background: 'white' }
+          }));
+          pdfWrap.appendChild(pdfContent);
+          setupDraggable(pdfWrap);
+          imagePanel.appendChild(pdfWrap);
         } else {
-          const imageContainer = createElement('div', {
-            className: 'image-container h-full w-full overflow-auto'
-          });
-
-          const imageContent = createElement('div', {
+          const imgWrap = createElement('div', { className: 'flex-1 overflow-auto', style: { cursor: 'grab', background: '#f8fafc' } });
+          const imgContent = createElement('div', {
             className: 'image-content',
-            style: {
-              transform: `scale(${state.zoom / 100})`,
-              transformOrigin: 'top left',
-              transition: 'transform 0.1s ease-out'
-            }
+            style: { transform: `scale(${state.zoom / 100})`, transformOrigin: 'top left', transition: 'transform 0.1s ease-out' }
           });
-
-          const img = createElement('img', {
-            src: state.history[0].image,
-            alt: 'Kaydedilmiş görsel',
-            className: 'max-w-none',
-            style: {
-              display: 'block',
-              margin: '0 auto'
-            }
-          });
-
-          imageContent.appendChild(img);
-          imageContainer.appendChild(imageContent);
-
-          // Make image container draggable
-          setupDraggable(imageContainer);
-
-          imagePanel.appendChild(imageContainer);
+          imgContent.appendChild(createElement('img', {
+            src: state.history[0].image, alt: 'Kaydedilmiş görsel',
+            style: { display: 'block', maxWidth: 'none', margin: '0 auto' }
+          }));
+          imgWrap.appendChild(imgContent);
+          setupDraggable(imgWrap);
+          imagePanel.appendChild(imgWrap);
         }
       } else {
-        // No image placeholder
-        const placeholder = createElement('div', {
-          className: 'text-center p-6 h-full flex items-center justify-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700'
-        });
-
-        const placeholderContent = createElement('div');
-
-        const placeholderIcon = createElement('svg', {
-          className: 'mx-auto h-12 w-12 text-gray-400',
-          fill: 'none',
-          viewBox: '0 0 24 24',
-          stroke: 'currentColor',
-          innerHTML: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />'
-        });
-
-        const placeholderText = createElement('p', {
-          className: 'mt-2 text-sm text-gray-500'
-        }, 'Görsel yok');
-
-        placeholderContent.appendChild(placeholderIcon);
-        placeholderContent.appendChild(placeholderText);
-        placeholder.appendChild(placeholderContent);
-
+        const placeholder = createElement('div', { className: 'flex-1 flex items-center justify-center bg-brand-50 dark:bg-brand-800/40' });
+        const phContent = createElement('div', { className: 'text-center' });
+        const phIcon = createElement('div', { className: 'text-brand-200 dark:text-brand-600 mb-2 flex justify-center' });
+        phIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-12 h-12"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M2.25 18V6a2.25 2.25 0 012.25-2.25h15A2.25 2.25 0 0121.75 6v12A2.25 2.25 0 0119.5 20.25H4.5A2.25 2.25 0 012.25 18z"/></svg>`;
+        phContent.appendChild(phIcon);
+        phContent.appendChild(createElement('p', { className: 'text-xs text-brand-400 dark:text-brand-500' }, 'Görsel yok'));
+        placeholder.appendChild(phContent);
         imagePanel.appendChild(placeholder);
       }
+      splitWrap.appendChild(imagePanel);
 
-      leftPanel.appendChild(imagePanel);
-
-      // Right panel (History entries)
-      const rightPanel = createElement('div', {
-        className: isMobile ? 'w-full' : 'split-pane-item',
-        style: isMobile ? {} : { width: '50%', padding: '12px', borderLeft: '2px solid #eaeaea' }
+      // Entries panel
+      const entriesPanel = createElement('div', {
+        className: `overflow-y-auto pr-1 ${mob ? 'space-y-2.5' : 'space-y-3'}`,
+        style: mob ? { maxHeight: '360px' } : { maxHeight: '600px' }
       });
 
-      const entriesContainer = createElement('div', {
-        className: `space-y-4 overflow-y-auto ${isMobile ? 'max-h-96' : 'h-full'} p-4 md:p-5 border border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl shadow-inner backdrop-blur-sm`
-      });
-
-      // Render history entries
       state.history.forEach((entry, index) => {
-        const historyEntry = createElement('div', {
-          className: `bg-white/90 dark:bg-slate-800/90 rounded-xl shadow-sm hover:shadow-md transition-all p-4 history-entry-${index} border ${currentTheme.border} ${currentTheme.bg}`
+        const entryCard = createElement('div', {
+          className: `border transition-all duration-200 ${currentTheme.border} ${currentTheme.bg} ${mob ? 'rounded-lg p-3' : 'rounded-xl p-4'}`
         });
 
-        // Entry header with actions
-        const entryHeader = createElement('div', {
-          className: 'flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2'
-        });
+        // Entry header
+        const entryHeader = createElement('div', { className: 'flex items-start justify-between gap-3 mb-3' });
 
-        // Title - editable when in edit mode
         if (state.editingHistoryIndex === index) {
-          const titleInput = createElement('input', {
-            type: 'text',
-            id: `edit-title-${index}`,
-            className: `flex-1 mr-3 px-3 py-2 border-2 ${currentTheme.accent} ${currentTheme.bg} dark:bg-anthracite-700 rounded-lg font-semibold text-lg ${currentTheme.title} focus:ring-2 focus:ring-opacity-50`,
+          entryHeader.appendChild(createElement('input', {
+            type: 'text', id: `edit-title-${index}`,
+            className: `flex-1 px-3 py-1.5 rounded-lg border ${currentTheme.accent} bg-white dark:bg-brand-800 text-sm font-semibold ${currentTheme.title} focus:outline-none`,
             value: entry.title || `Alternatif ${index + 1}`,
             placeholder: 'Başlık girin...'
-          });
-          entryHeader.appendChild(titleInput);
+          }));
         } else {
-          const entryTitle = createElement('h3', {
-            className: `font-semibold text-lg ${currentTheme.title}`
-          }, entry.title || `Alternatif ${index + 1}`);
-          entryHeader.appendChild(entryTitle);
+          entryHeader.appendChild(createElement('h4', { className: `text-sm font-bold ${currentTheme.title}` }, entry.title || `Alternatif ${index + 1}`));
         }
 
-        // Entry actions
-        const actions = createElement('div', {
-          className: 'flex flex-wrap gap-2 w-full sm:w-auto'
-        });
+        const entryActions = createElement('div', { className: 'flex items-center gap-1 flex-shrink-0' });
 
-        // If editing this entry, show save/cancel buttons
         if (state.editingHistoryIndex === index) {
-          const saveButton = createElement('button', {
-            className: 'p-1 hover:opacity-70 transition-all cursor-pointer',
-            onClick: () => saveHistoryEdit(index),
-            title: 'Kaydet'
+          const saveBtn = createElement('button', {
+            className: 'p-1.5 rounded-md text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200 cursor-pointer',
+            onClick: () => saveHistoryEdit(index), title: 'Kaydet'
           });
-          saveButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-          actions.appendChild(saveButton);
+          saveBtn.innerHTML = icons.check;
+          entryActions.appendChild(saveBtn);
 
-          const cancelButton = createElement('button', {
-            className: 'p-1 hover:opacity-70 transition-all cursor-pointer',
-            onClick: cancelHistoryEdit,
-            title: 'İptal'
+          const cancelBtn = createElement('button', {
+            className: 'p-1.5 rounded-md text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-700 transition-colors duration-200 cursor-pointer',
+            onClick: cancelHistoryEdit, title: 'İptal'
           });
-          cancelButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-          actions.appendChild(cancelButton);
+          cancelBtn.innerHTML = icons.xMark;
+          entryActions.appendChild(cancelBtn);
         } else {
-          // Otherwise show edit/delete/add image buttons
-          const editButton = createElement('button', {
-            className: 'p-1 hover:opacity-70 transition-all cursor-pointer',
-            onClick: () => startEditingHistory(index),
-            title: 'Düzenle'
+          const editBtn = createElement('button', {
+            className: 'p-1.5 rounded-md text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors duration-200 cursor-pointer',
+            onClick: () => startEditingHistory(index), title: 'Düzenle'
           });
-          editButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
-          actions.appendChild(editButton);
+          editBtn.innerHTML = icons.pencil;
+          entryActions.appendChild(editBtn);
 
-          // Add/Change Image button
-          const imageFileInput = createElement('input', {
-            type: 'file',
-            accept: 'image/*,application/pdf',
-            className: 'hidden',
-            onChange: (e) => {
-              if (e.target.files && e.target.files[0]) {
-                const file = e.target.files[0];
+          const imgInput = createElement('input', {
+            type: 'file', accept: 'image/*,application/pdf', className: 'hidden',
+            onChange: e => {
+              if (e.target.files?.[0]) {
                 const reader = new FileReader();
-                reader.onload = (evt) => {
+                reader.onload = evt => {
                   state.history[index].image = evt.target.result;
                   processHistoryData[index].image = evt.target.result;
-                  saveToStorage();
-                  renderApp();
+                  saveToStorage(); renderApp();
                   showNotification('Görsel güncellendi', 'success');
                 };
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(e.target.files[0]);
               }
             }
           });
-
-          const imageButton = createElement('button', {
-            className: 'p-1 hover:opacity-70 transition-all cursor-pointer',
-            onClick: () => imageFileInput.click(),
-            title: entry.image ? 'Görseli Değiştir' : 'Görsel Ekle'
+          const imgBtn = createElement('button', {
+            className: 'p-1.5 rounded-md text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors duration-200 cursor-pointer',
+            onClick: () => imgInput.click(), title: entry.image ? 'Görseli Değiştir' : 'Görsel Ekle'
           });
-          imageButton.innerHTML = entry.image
-            ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>'
-            : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>';
-          actions.appendChild(imageFileInput);
-          actions.appendChild(imageButton);
+          imgBtn.innerHTML = icons.photo;
+          entryActions.appendChild(imgInput);
+          entryActions.appendChild(imgBtn);
 
-          const deleteButton = createElement('button', {
-            className: 'p-1 hover:opacity-70 transition-all cursor-pointer',
-            onClick: () => deleteHistoryEntry(index),
-            title: 'Sil'
+          const delBtn = createElement('button', {
+            className: 'p-1.5 rounded-md text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 cursor-pointer',
+            onClick: () => deleteHistoryEntry(index), title: 'Sil'
           });
-          deleteButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>';
-          actions.appendChild(deleteButton);
+          delBtn.innerHTML = icons.trash;
+          entryActions.appendChild(delBtn);
         }
 
-        entryHeader.appendChild(actions);
-        historyEntry.appendChild(entryHeader);
+        entryHeader.appendChild(entryActions);
+        entryCard.appendChild(entryHeader);
 
-        // Entry content - inline editing
-        const contentContainer = createElement('div', {
-          className: 'mt-3'
-        });
-
+        // Entry content
         if (state.editingHistoryIndex === index) {
-          // Edit mode - Direct inline textarea (NO BOX!)
-          let contentLines = [];
-          if (Array.isArray(entry.data)) {
-            contentLines = entry.data;
-          } else if (entry.data) {
-            contentLines = [String(entry.data)];
-          }
+          let contentLines = Array.isArray(entry.data) ? entry.data : entry.data ? [String(entry.data)] : [];
+          const cleanLines = contentLines.map(line => { const t = document.createElement('div'); t.innerHTML = line; return t.textContent || t.innerText || line; });
 
-          // Strip HTML tags from content for editing
-          const cleanContentLines = contentLines.map(line => {
-            // Create a temporary element to decode HTML
-            const temp = document.createElement('div');
-            temp.innerHTML = line;
-            return temp.textContent || temp.innerText || line;
-          });
-
-          const contentTextarea = createElement('textarea', {
+          entryCard.appendChild(createElement('textarea', {
             id: `edit-content-${index}`,
-            className: `w-full px-3 py-2 border-2 ${currentTheme.accent} ${currentTheme.bg} dark:bg-anthracite-700 rounded-lg text-sm resize-y ${currentTheme.text} focus:outline-none focus:ring-2 focus:ring-opacity-50`,
-            rows: 8,
-            value: cleanContentLines.join('\n'),
+            className: `w-full px-3 py-2 rounded-lg border ${currentTheme.accent} bg-white dark:bg-brand-800 text-sm font-mono ${currentTheme.text} focus:outline-none resize-y`,
+            rows: 6, value: cleanLines.join('\n'),
             placeholder: 'Her satır bir alternatif...',
-            style: {
-              minHeight: '120px',
-              fontFamily: 'ui-monospace, monospace'
-            }
-          });
-          contentContainer.appendChild(contentTextarea);
+            style: { minHeight: '100px' }
+          }));
 
-          // Image upload section in edit mode
-          const imageSection = createElement('div', {
-            className: 'mt-3 p-3 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg'
-          });
-
-          const imageLabel = createElement('p', {
-            className: 'text-sm font-medium mb-2 text-gray-700 dark:text-gray-300'
-          }, 'Görsel:');
-          imageSection.appendChild(imageLabel);
-
-          if (entry.image) {
-            const currentImageInfo = createElement('p', {
-              className: 'text-xs text-gray-600 dark:text-gray-400 mb-2'
-            }, '✓ Mevcut görsel var');
-            imageSection.appendChild(currentImageInfo);
-          }
-
-          const imageEditInput = createElement('input', {
-            type: 'file',
-            accept: 'image/*,application/pdf',
-            id: `edit-image-${index}`,
-            className: 'hidden'
-          });
-
-          const imageUploadButton = createElement('button', {
+          const imgSection = createElement('div', { className: 'mt-3 flex items-center gap-2' });
+          const imgEditInput = createElement('input', { type: 'file', accept: 'image/*,application/pdf', id: `edit-image-${index}`, className: 'hidden' });
+          const imgUpBtn = createElement('button', {
             type: 'button',
-            className: 'px-3 py-2 bg-anthracite-600 hover:bg-anthracite-700 text-white text-sm rounded-md transition-all shadow-md',
-            onClick: () => imageEditInput.click()
-          }, entry.image ? '🖼️' : '📷');
-
-          imageSection.appendChild(imageEditInput);
-          imageSection.appendChild(imageUploadButton);
-          contentContainer.appendChild(imageSection);
-
-          // Help text
-          const helpText = createElement('p', {
-            className: 'text-xs text-success-700 dark:text-success-400 mt-2'
-          }, '💡 Her satır ayrı gösterilir');
-          contentContainer.appendChild(helpText);
-
-        } else {
-          // Display mode - Clean paragraphs
-          const displayContainer = createElement('div', {
-            className: 'space-y-1'
+            className: 'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-brand-100 dark:bg-brand-700 text-brand-600 dark:text-brand-300 hover:bg-brand-200 dark:hover:bg-brand-600 transition-colors duration-200 cursor-pointer',
+            onClick: () => imgEditInput.click()
           });
-
+          const upIc = createElement('span');
+          upIc.innerHTML = icons.photo;
+          imgUpBtn.appendChild(upIc);
+          imgUpBtn.appendChild(createElement('span', {}, entry.image ? 'Görseli Değiştir' : 'Görsel Ekle'));
+          imgSection.appendChild(imgEditInput);
+          imgSection.appendChild(imgUpBtn);
+          if (entry.image) {
+            const existLabel = createElement('span', { className: 'text-[10px] text-emerald-500 font-medium' });
+            existLabel.innerHTML = `${icons.check} Mevcut`;
+            imgSection.appendChild(existLabel);
+          }
+          entryCard.appendChild(imgSection);
+        } else {
           let displayData = entry.data;
           if (!displayData) displayData = [""];
           if (!Array.isArray(displayData)) displayData = [String(displayData)];
 
-          displayData.forEach((line, lineIndex) => {
+          const contentDiv = createElement('div', { className: 'space-y-1' });
+          displayData.forEach(line => {
             if (!line || line.trim() === '') {
-              displayContainer.appendChild(createElement('div', { className: 'h-2' }));
+              contentDiv.appendChild(createElement('div', { className: 'h-1.5' }));
             } else {
-              const paragraph = createElement('p', {
-                className: `${currentTheme.text} text-sm leading-relaxed`
-              });
-              // Decode HTML entities for display
+              const p = createElement('p', { className: `${currentTheme.text} text-sm leading-relaxed font-mono` });
               const temp = document.createElement('div');
               temp.innerHTML = line;
-              paragraph.textContent = temp.textContent || temp.innerText || line;
-              displayContainer.appendChild(paragraph);
+              p.textContent = temp.textContent || temp.innerText || line;
+              contentDiv.appendChild(p);
             }
           });
-
-          contentContainer.appendChild(displayContainer);
+          entryCard.appendChild(contentDiv);
         }
 
-        historyEntry.appendChild(contentContainer);
-
-        entriesContainer.appendChild(historyEntry);
+        entriesPanel.appendChild(entryCard);
       });
 
-      rightPanel.appendChild(entriesContainer);
-
-      // Add panels to container
-      splitContainer.appendChild(leftPanel);
-
-      // Only add divider and resize on desktop
-      if (!isMobile) {
-        // Divider for resizing
-        const divider = createElement('div', {
-          className: 'split-pane-divider',
-          style: { left: '50%' }
-        });
-        splitContainer.appendChild(divider);
-
-        splitContainer.appendChild(rightPanel);
-
-        // Add resize handle to the container
-        const resizeHandle = createElement('div', {
-          className: 'resize-handle'
-        });
-        splitContainer.appendChild(resizeHandle);
-
-        // Setup resize handlers
-        state.cleanupResizeHandlers = setupResizeHandlers(splitContainer, leftPanel, rightPanel, divider, resizeHandle);
-      } else {
-        splitContainer.appendChild(rightPanel);
-      }
-
-      // Add split container to main container
-      container.appendChild(splitContainer);
-
+      splitWrap.appendChild(entriesPanel);
+      container.appendChild(splitWrap);
       return container;
     }
 
-    // Setup handlers for resizing the split pane
-    function setupResizeHandlers(splitContainer, leftPanel, rightPanel, divider, resizeHandle) {
-      let isDragging = false;
-      let isResizing = false;
-      let initialWidth, initialHeight, initialX, initialY;
-
-      const onDividerMouseDown = (e) => {
-        e.preventDefault();
-        isDragging = true;
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-      };
-
-      const onResizeHandleMouseDown = (e) => {
-        e.preventDefault();
-        isResizing = true;
-        initialWidth = splitContainer.offsetWidth;
-        initialHeight = splitContainer.offsetHeight;
-        initialX = e.clientX;
-        initialY = e.clientY;
-        document.body.style.cursor = 'nwse-resize';
-        document.body.style.userSelect = 'none';
-      };
-
-      const onDocumentMouseMove = (e) => {
-        if (isDragging) {
-          const containerRect = splitContainer.getBoundingClientRect();
-          const containerWidth = containerRect.width;
-          const offsetX = e.clientX - containerRect.left;
-
-          // Calculate percentage (constrained between 20% and 80%)
-          const position = Math.min(Math.max((offsetX / containerWidth) * 100, 20), 80);
-
-          // Update panel widths
-          leftPanel.style.width = `${position}%`;
-          rightPanel.style.width = `${100 - position}%`;
-          divider.style.left = `${position}%`;
-        }
-
-        if (isResizing) {
-          // Calculate new dimensions
-          const deltaX = e.clientX - initialX;
-          const deltaY = e.clientY - initialY;
-
-          // Constrain minimum size
-          const newWidth = Math.max(initialWidth + deltaX, 600);
-          const newHeight = Math.max(initialHeight + deltaY, 400);
-
-          // Apply new dimensions
-          splitContainer.style.width = `${newWidth}px`;
-          splitContainer.style.height = `${newHeight}px`;
-
-          // Save dimensions to state
-          state.containerDimensions.width = `${newWidth}px`;
-          state.containerDimensions.height = `${newHeight}px`;
-        }
-      };
-
-      const onDocumentMouseUp = () => {
-        if (isDragging) {
-          isDragging = false;
-          document.body.style.cursor = '';
-          document.body.style.userSelect = '';
-        }
-
-        if (isResizing) {
-          isResizing = false;
-          document.body.style.cursor = '';
-          document.body.style.userSelect = '';
-        }
-      };
-
-      divider.addEventListener('mousedown', onDividerMouseDown);
-      resizeHandle.addEventListener('mousedown', onResizeHandleMouseDown);
-      document.addEventListener('mousemove', onDocumentMouseMove);
-      document.addEventListener('mouseup', onDocumentMouseUp);
-
-      return () => {
-        divider.removeEventListener('mousedown', onDividerMouseDown);
-        resizeHandle.removeEventListener('mousedown', onResizeHandleMouseDown);
-        document.removeEventListener('mousemove', onDocumentMouseMove);
-        document.removeEventListener('mouseup', onDocumentMouseUp);
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-      };
-    }
-
-    // Action functions
+    // ─── ACTION FUNCTIONS ───
     function addKarma() {
       if (!state.karmaData.netAlan || (state.karmaData.daireType !== "TİCARİ" && !state.karmaData.daireSayisi)) {
         state.error = "Lütfen gerekli alanları doldurun";
-        renderApp();
-        return;
+        renderApp(); return;
       }
-
       const entry = {
         ...state.karmaData,
         daireSayisi: state.karmaData.daireType === "TİCARİ" ? "1" : state.karmaData.daireSayisi,
         brutAlan: calculateBrut(parseFloat(state.karmaData.netAlan)),
         netAlanTotal: parseFloat(state.karmaData.netAlan) * (state.karmaData.daireType === "TİCARİ" ? 1 : parseFloat(state.karmaData.daireSayisi))
       };
-
       state.karmaList = [...state.karmaList, entry];
       state.karmaData = { daireSayisi: "", netAlan: "", daireType: "3+1" };
       state.karmaTypeTouched = false;
       state.error = "";
-
-      saveToStorage(); // Auto-save
+      saveToStorage();
       showNotification('Karma alan eklendi', 'success');
       renderApp();
     }
 
     function calculate() {
-      // Enhanced validation
       const arsaAlani = parseFloat(state.mainInfo.arsaAlani);
       const kaks = parseFloat(state.mainInfo.kaks);
       const katSayisi = parseInt(state.mainInfo.katSayisi, 10);
 
-      // Check if fields are filled
       if (!state.mainInfo.arsaAlani || !state.mainInfo.kaks || !state.mainInfo.katSayisi) {
-        state.error = "Lütfen tüm alanları doldurun";
-        renderApp();
-        showNotification('Lütfen tüm zorunlu alanları doldurun', 'error');
-        return;
+        state.error = "Lütfen tüm alanları doldurun"; renderApp(); showNotification('Tüm zorunlu alanları doldurun', 'error'); return;
       }
-
-      // Validate numeric values
-      if (isNaN(arsaAlani) || arsaAlani <= 0) {
-        state.error = "Arsa alanı geçerli bir pozitif sayı olmalıdır";
-        renderApp();
-        showNotification('Geçersiz arsa alanı', 'error');
-        return;
-      }
-
-      if (isNaN(kaks) || kaks <= 0) {
-        state.error = "KAKS geçerli bir pozitif sayı olmalıdır";
-        renderApp();
-        showNotification('Geçersiz KAKS değeri', 'error');
-        return;
-      }
-
-      if (isNaN(katSayisi) || katSayisi < 1) {
-        state.error = "Kat sayısı en az 1 olmalıdır";
-        renderApp();
-        showNotification('Geçersiz kat sayısı', 'error');
-        return;
-      }
-
-      // Reasonable limits check
-      if (arsaAlani > 1000000) {
-        state.error = "Arsa alanı çok büyük görünüyor (max 1.000.000 m²)";
-        renderApp();
-        showNotification('Arsa alanı çok büyük', 'error');
-        return;
-      }
-
-      if (kaks > 10) {
-        state.error = "KAKS değeri çok yüksek görünüyor (max 10)";
-        renderApp();
-        showNotification('KAKS değeri çok yüksek', 'error');
-        return;
-      }
-
-      if (katSayisi > 100) {
-        state.error = "Kat sayısı çok yüksek görünüyor (max 100)";
-        renderApp();
-        showNotification('Kat sayısı çok yüksek', 'error');
-        return;
-      }
+      if (isNaN(arsaAlani) || arsaAlani <= 0) { state.error = "Arsa alanı geçerli bir pozitif sayı olmalıdır"; renderApp(); return; }
+      if (isNaN(kaks) || kaks <= 0) { state.error = "KAKS geçerli bir pozitif sayı olmalıdır"; renderApp(); return; }
+      if (isNaN(katSayisi) || katSayisi < 1) { state.error = "Kat sayısı en az 1 olmalıdır"; renderApp(); return; }
+      if (arsaAlani > 1000000) { state.error = "Arsa alanı çok büyük (max 1.000.000 m²)"; renderApp(); return; }
+      if (kaks > 10) { state.error = "KAKS değeri çok yüksek (max 10)"; renderApp(); return; }
+      if (katSayisi > 100) { state.error = "Kat sayısı çok yüksek (max 100)"; renderApp(); return; }
 
       state.error = "";
       state.selectedAltIndexes = [];
@@ -2410,22 +1559,12 @@
         const kt = katSayisi;
         state.kat = kt;
 
-        if (rem < 0) {
-          state.error = "Karma alan toplamı, toplam inşaat alanını aşıyor";
-          renderApp();
-          showNotification('Karma alan fazla', 'error');
-          return;
-        }
+        if (rem < 0) { state.error = "Karma alan toplamı, toplam inşaat alanını aşıyor"; renderApp(); return; }
 
         state.result = {
-          totalArea: tot,
-          remainingNetArea: rem,
-          remainingBrutArea: rem * 1.18,
-          usedEmsal: he,
-          floorArea: tot / kt,
-          alternatives: calcAlternatives(rem, kt)
+          totalArea: tot, remainingNetArea: rem, remainingBrutArea: rem * 1.18,
+          usedEmsal: he, floorArea: tot / kt, alternatives: calcAlternatives(rem, kt)
         };
-
         state.activeTab = 'results';
         renderApp();
         showNotification('Hesaplama tamamlandı', 'success');
@@ -2433,7 +1572,6 @@
         console.error('Hesaplama hatası:', e);
         state.error = "Hesaplama hatası: " + e.message;
         renderApp();
-        showNotification('Hesaplama sırasında hata oluştu', 'error');
       }
     }
 
@@ -2441,387 +1579,211 @@
       try {
         const alts = [];
         const maxUnits = Math.floor(rem / C.MIN);
-
-        if (maxUnits < 1 || kat < 1) {
-          console.warn('Geçersiz değerler: maxUnits:', maxUnits, 'kat:', kat);
-          return [];
-        }
-
+        if (maxUnits < 1 || kat < 1) return [];
         for (let t = kat; t <= maxUnits; t += kat) {
           const net = rem / t;
           if (net >= C.MIN)
-            alts.push({
-              totalUnits: t,
-              unitsPerFloor: t / kat,
-              netArea: net.toFixed(2),
-              brutArea: calculateBrut(net),
-              type: getType(net)
-            });
+            alts.push({ totalUnits: t, unitsPerFloor: t / kat, netArea: net.toFixed(2), brutArea: calculateBrut(net), type: getType(net) });
         }
-
         return alts;
-      } catch (e) {
-        console.error('Alternatif hesaplama hatası:', e);
-        return [];
-      }
+      } catch (e) { console.error('Alternatif hesaplama hatası:', e); return []; }
     }
 
     function toggleAlternativeSelection(index) {
-      if (state.selectedAltIndexes.includes(index)) {
-        state.selectedAltIndexes = state.selectedAltIndexes.filter(i => i !== index);
-      } else {
-        state.selectedAltIndexes = [...state.selectedAltIndexes, index];
-      }
+      state.selectedAltIndexes = state.selectedAltIndexes.includes(index)
+        ? state.selectedAltIndexes.filter(i => i !== index)
+        : [...state.selectedAltIndexes, index];
       renderApp();
     }
 
     function showSelectedAlternatives() {
       if (!state.result?.alternatives) return;
-
-      if (!state.selectedAltIndexes.length) {
-        state.error = "Lütfen en az bir alternatif seçin";
-        renderApp();
-        return;
-      }
-
+      if (!state.selectedAltIndexes.length) { state.error = "Lütfen en az bir alternatif seçin"; renderApp(); return; }
       state.error = "";
       state.finalAlternatives = state.result.alternatives.filter((_, i) => state.selectedAltIndexes.includes(i));
       renderApp();
     }
 
-    function saveProcess() {
-      if (!state.finalAlternatives?.length) {
-        state.error = "Kaydedilecek bir alternatif yok!";
-        renderApp();
-        return;
-      }
-
+    function quickSaveSelected() {
+      if (!state.result?.alternatives) return;
+      if (!state.selectedAltIndexes.length) { state.error = "Lütfen en az bir alternatif seçin"; renderApp(); return; }
       state.error = "";
-      const lines = state.finalAlternatives.map((alt, i) => formatAlternative(alt, i, state.kat, state.karmaList));
-
-      // Ensure we have at least one line
-      if (!lines.length) {
-        lines.push("");
-      }
-
+      const selected = state.result.alternatives.filter((_, i) => state.selectedAltIndexes.includes(i));
+      const lines = selected.map((alt, i) => formatAlternative(alt, i, state.kat, state.karmaList));
+      if (!lines.length) lines.push("");
       const newEntryBase = { date: new Date().toLocaleString(), data: lines, kat: state.kat };
 
       if (state.files.length > 0) {
-        const file = state.files[0];
         const reader = new FileReader();
-
-        reader.onload = (e) => {
-          const imageData = e.target.result;
-          const newEntry = { ...newEntryBase, image: imageData };
-          processHistoryData.push(newEntry);
+        reader.onload = e => {
+          processHistoryData.push({ ...newEntryBase, image: e.target.result });
           state.history = getProcessHistory();
           state.files = [];
-          saveToStorage();
-          renderApp();
-
+          saveToStorage(); renderApp();
           showNotification('İşlem kaydedildi', 'success');
         };
-
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(state.files[0]);
       } else {
         processHistoryData.push(newEntryBase);
         state.history = getProcessHistory();
-        saveToStorage();
-        renderApp();
-
+        saveToStorage(); renderApp();
         showNotification('İşlem kaydedildi', 'success');
       }
     }
 
-    function handleFileUpload(e) {
-      state.files = Array.from(e.target.files);
-      renderApp();
+    function saveProcess() {
+      if (!state.finalAlternatives?.length) { state.error = "Kaydedilecek bir alternatif yok!"; renderApp(); return; }
+      state.error = "";
+      const lines = state.finalAlternatives.map((alt, i) => formatAlternative(alt, i, state.kat, state.karmaList));
+      if (!lines.length) lines.push("");
+      const newEntryBase = { date: new Date().toLocaleString(), data: lines, kat: state.kat };
+
+      if (state.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          processHistoryData.push({ ...newEntryBase, image: e.target.result });
+          state.history = getProcessHistory();
+          state.files = [];
+          saveToStorage(); renderApp();
+          showNotification('İşlem kaydedildi', 'success');
+        };
+        reader.readAsDataURL(state.files[0]);
+      } else {
+        processHistoryData.push(newEntryBase);
+        state.history = getProcessHistory();
+        saveToStorage(); renderApp();
+        showNotification('İşlem kaydedildi', 'success');
+      }
     }
+
+    function handleFileUpload(e) { state.files = Array.from(e.target.files); renderApp(); }
 
     function clearHistory() {
       state.history = clearProcessHistory();
       state.activeTab = 'form';
       renderApp();
-
       showNotification('Geçmiş temizlendi', 'info');
     }
 
     function deleteHistoryEntry(index) {
-      const updatedHistory = [...state.history];
-      updatedHistory.splice(index, 1);
-      processHistoryData = updatedHistory;
-      state.history = updatedHistory;
-
-      // If deleting the entry we're editing
-      if (state.editingHistoryIndex === index) {
-        state.editingHistoryIndex = -1;
-      }
-
-      saveToStorage(); // Save after delete
-      renderApp();
+      const updated = [...state.history];
+      updated.splice(index, 1);
+      processHistoryData = updated;
+      state.history = updated;
+      if (state.editingHistoryIndex === index) state.editingHistoryIndex = -1;
+      saveToStorage(); renderApp();
       showNotification('Kayıt silindi', 'info');
     }
 
-    // Export data as JSON
     function exportData() {
       try {
-        const dataToExport = {
-          version: '1.0',
-          exportDate: new Date().toISOString(),
-          history: processHistoryData,
-          mainInfo: state.mainInfo,
-          karmaList: state.karmaList
-        };
-
-        const jsonString = JSON.stringify(dataToExport, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json' });
+        const data = { version: '1.0', exportDate: new Date().toISOString(), history: processHistoryData, mainInfo: state.mainInfo, karmaList: state.karmaList };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = `emsal-hesaplama-${new Date().toISOString().split('T')[0]}.json`;
         link.click();
         URL.revokeObjectURL(url);
-
         showNotification('Veriler dışa aktarıldı', 'success');
-      } catch (e) {
-        console.error('Export hatası:', e);
-        showNotification('Dışa aktarma sırasında hata oluştu', 'error');
-      }
+      } catch (e) { console.error('Export hatası:', e); showNotification('Dışa aktarma hatası', 'error'); }
     }
 
-    // Import data from JSON
     function importData(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         try {
-          const importedData = JSON.parse(e.target.result);
-
-          // Validate imported data structure
-          if (!importedData.version) {
-            throw new Error('Geçersiz dosya formatı');
-          }
-
-          // Restore data
-          if (importedData.history) {
-            processHistoryData = importedData.history;
-            state.history = importedData.history;
-          }
-          if (importedData.mainInfo) {
-            state.mainInfo = importedData.mainInfo;
-          }
-          if (importedData.karmaList) {
-            state.karmaList = importedData.karmaList;
-          }
-
-          saveToStorage(); // Save imported data
-          renderApp();
+          const imported = JSON.parse(e.target.result);
+          if (!imported.version) throw new Error('Geçersiz dosya formatı');
+          if (imported.history) { processHistoryData = imported.history; state.history = imported.history; }
+          if (imported.mainInfo) state.mainInfo = imported.mainInfo;
+          if (imported.karmaList) state.karmaList = imported.karmaList;
+          saveToStorage(); renderApp();
           showNotification('Veriler başarıyla içe aktarıldı', 'success');
-        } catch (error) {
-          console.error('Import hatası:', error);
-          showNotification('İçe aktarma hatası: ' + error.message, 'error');
-        }
+        } catch (err) { console.error('Import hatası:', err); showNotification('İçe aktarma hatası: ' + err.message, 'error'); }
       };
-
-      reader.onerror = () => {
-        showNotification('Dosya okuma hatası', 'error');
-      };
-
+      reader.onerror = () => showNotification('Dosya okuma hatası', 'error');
       reader.readAsText(file);
     }
 
-    // History editing functions
+    // ─── HISTORY EDITING ───
     let editBackup = null;
 
     function startEditingHistory(index) {
-      // Önce backup al
       editBackup = JSON.parse(JSON.stringify(state.history[index]));
-
-      // Düzenleme moduna geç
       state.editingHistoryIndex = index;
       renderApp();
     }
 
     function cancelHistoryEdit() {
-      // Backup'tan geri yükle
-      if (editBackup && state.editingHistoryIndex >= 0) {
-        state.history[state.editingHistoryIndex] = editBackup;
-      }
-
-      // Düzenleme modundan çık
+      if (editBackup && state.editingHistoryIndex >= 0) state.history[state.editingHistoryIndex] = editBackup;
       state.editingHistoryIndex = -1;
       editBackup = null;
       renderApp();
     }
 
     function saveHistoryEdit(index) {
-      // Get title input, content textarea, and image input
       const titleInput = document.getElementById(`edit-title-${index}`);
       const contentTextarea = document.getElementById(`edit-content-${index}`);
       const imageInput = document.getElementById(`edit-image-${index}`);
+      if (!titleInput || !contentTextarea) { cancelHistoryEdit(); return; }
 
-      if (!titleInput || !contentTextarea) {
-        console.error('Edit inputs not found for index:', index);
-        cancelHistoryEdit();
-        return;
-      }
+      const updated = { ...state.history[index] };
+      updated.title = titleInput.value.trim() || `Alternatif ${index + 1}`;
+      const lines = contentTextarea.value.split('\n').filter(l => l !== null && l !== undefined);
+      updated.data = lines.map(l => l.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'));
+      if (!updated.data.length) updated.data = [''];
 
-      const updatedEntry = { ...state.history[index] };
-
-      // Update title
-      const titleValue = titleInput.value.trim();
-      updatedEntry.title = titleValue || `Alternatif ${index + 1}`;
-
-      // Update content (split by newlines) - Save as plain text
-      const contentValue = contentTextarea.value;
-      const contentLines = contentValue.split('\n').filter(line => line !== null && line !== undefined);
-
-      // Escape HTML to prevent XSS and save as plain text
-      const escapedLines = contentLines.map(line => {
-        return line
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
-      });
-
-      updatedEntry.data = escapedLines.length > 0 ? escapedLines : [''];
-
-      // Check if image was uploaded
-      if (imageInput && imageInput.files && imageInput.files[0]) {
-        const file = imageInput.files[0];
+      if (imageInput?.files?.[0]) {
         const reader = new FileReader();
-
-        reader.onload = (e) => {
-          updatedEntry.image = e.target.result;
-
-          // Update the history
-          state.history[index] = updatedEntry;
-          processHistoryData[index] = updatedEntry;
+        reader.onload = e => {
+          updated.image = e.target.result;
+          state.history[index] = updated;
+          processHistoryData[index] = updated;
           editBackup = null;
-
-          // Exit edit mode
           state.editingHistoryIndex = -1;
-
-          saveToStorage(); // Save changes
-          renderApp();
+          saveToStorage(); renderApp();
           showNotification('Kayıt ve görsel güncellendi', 'success');
         };
-
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(imageInput.files[0]);
       } else {
-        // No new image, just save text changes
-        // Update the history
-        state.history[index] = updatedEntry;
-        processHistoryData[index] = updatedEntry;
+        state.history[index] = updated;
+        processHistoryData[index] = updated;
         editBackup = null;
-
-        // Exit edit mode
         state.editingHistoryIndex = -1;
-
-        saveToStorage(); // Save changes
-        renderApp();
+        saveToStorage(); renderApp();
         showNotification('Kayıt güncellendi', 'success');
       }
     }
 
-    // Zoom controls
+    // ─── ZOOM & DRAG ───
     function handleZoomWheel(e) {
       if (e.ctrlKey) {
         e.preventDefault();
         const delta = e.deltaY < 0 ? 10 : -10;
         const newZoom = Math.max(50, Math.min(300, state.zoom + delta));
-
-        if (newZoom !== state.zoom) {
-          state.zoom = newZoom;
-          updateZoomUI(e.currentTarget);
-        }
+        if (newZoom !== state.zoom) { state.zoom = newZoom; updateZoomUI(e.currentTarget); }
       }
     }
 
-    // Update zoom UI without full re-render
     function updateZoomUI(container) {
-      // Find content element to transform
-      let contentElement;
-      if (container.querySelector('.image-content')) {
-        contentElement = container.querySelector('.image-content');
-      } else {
-        // For PDF, the first child of the container is usually the content div
-        contentElement = container.firstElementChild;
+      const content = container.querySelector('.image-content') || container.firstElementChild;
+      if (content) {
+        content.style.transform = `scale(${state.zoom / 100})`;
+        content.style.width = state.zoom > 100 ? `${state.zoom}%` : '100%';
+        content.style.height = state.zoom > 100 ? `${state.zoom}%` : '100%';
       }
-
-      if (contentElement) {
-        // Update transform scale
-        contentElement.style.transform = `scale(${state.zoom / 100})`;
-
-        // Update dimensions for zoom levels > 100%
-        if (state.zoom > 100) {
-          contentElement.style.width = `${state.zoom}%`;
-          contentElement.style.height = `${state.zoom}%`;
-        } else {
-          contentElement.style.width = '100%';
-          contentElement.style.height = '100%';
-        }
-      }
-
-      // Show zoom controls
-      showZoomControlsTemporarily();
     }
 
-    // Show zoom controls temporarily
-    function showZoomControlsTemporarily() {
-      const zoomControlsElements = document.querySelectorAll('.zoom-controls');
-      zoomControlsElements.forEach(element => {
-        // Update zoom percentage text
-        const percentText = element.querySelector('span');
-        if (percentText) {
-          percentText.textContent = Math.round(state.zoom) + '%';
-        }
-
-        // Show controls
-        element.classList.add('visible');
-
-        // Hide after delay
-        clearTimeout(state.zoomControlsTimeout);
-        state.zoomControlsTimeout = setTimeout(() => {
-          element.classList.remove('visible');
-        }, 1500);
-      });
-    }
-
-    // Reset zoom level
-    function resetZoom() {
-      state.zoom = 100;
-
-      // Find all zoomable content and reset
-      document.querySelectorAll('.image-content, .flex-1.w-full.overflow-auto > div').forEach(contentElement => {
-        contentElement.style.transform = 'scale(1)';
-        contentElement.style.width = '100%';
-        contentElement.style.height = '100%';
-      });
-
-      showZoomControlsTemporarily();
-    }
-
-    // Setup draggable container
     function setupDraggable(container) {
-      let isDragging = false;
-      let startX = 0;
-      let startY = 0;
-      let scrollLeft = 0;
-      let scrollTop = 0;
-
-      // Touch gesture variables
-      let initialDistance = 0;
-      let initialZoom = 100;
+      let isDragging = false, startX = 0, startY = 0, scrollLeft = 0, scrollTop = 0;
+      let initialDistance = 0, initialZoom = 100;
 
       container.style.cursor = 'grab';
 
-      // Mouse events
-      container.addEventListener('mousedown', (e) => {
+      container.addEventListener('mousedown', e => {
         isDragging = true;
         startX = e.pageX - container.offsetLeft;
         startY = e.pageY - container.offsetTop;
@@ -2830,127 +1792,60 @@
         container.style.cursor = 'grabbing';
       });
 
-      container.addEventListener('mousemove', (e) => {
+      container.addEventListener('mousemove', e => {
         if (!isDragging) return;
         e.preventDefault();
-        const x = e.pageX - container.offsetLeft;
-        const y = e.pageY - container.offsetTop;
-        const walkX = (x - startX) * 1.5;
-        const walkY = (y - startY) * 1.5;
-        container.scrollLeft = scrollLeft - walkX;
-        container.scrollTop = scrollTop - walkY;
+        container.scrollLeft = scrollLeft - ((e.pageX - container.offsetLeft) - startX) * 1.5;
+        container.scrollTop = scrollTop - ((e.pageY - container.offsetTop) - startY) * 1.5;
       });
 
-      const stopDragging = () => {
-        isDragging = false;
-        container.style.cursor = 'grab';
-      };
+      const stopDrag = () => { isDragging = false; container.style.cursor = 'grab'; };
+      container.addEventListener('mouseup', stopDrag);
+      container.addEventListener('mouseleave', stopDrag);
 
-      container.addEventListener('mouseup', stopDragging);
-      container.addEventListener('mouseleave', stopDragging);
-
-      // Touch events for mobile
-      container.addEventListener('touchstart', (e) => {
+      container.addEventListener('touchstart', e => {
         if (e.touches.length === 1) {
-          // Single touch - drag
           isDragging = true;
-          const touch = e.touches[0];
-          startX = touch.pageX - container.offsetLeft;
-          startY = touch.pageY - container.offsetTop;
+          startX = e.touches[0].pageX - container.offsetLeft;
+          startY = e.touches[0].pageY - container.offsetTop;
           scrollLeft = container.scrollLeft;
           scrollTop = container.scrollTop;
         } else if (e.touches.length === 2) {
-          // Two fingers - prepare for pinch zoom
           isDragging = false;
-          const touch1 = e.touches[0];
-          const touch2 = e.touches[1];
-          initialDistance = Math.hypot(
-            touch2.pageX - touch1.pageX,
-            touch2.pageY - touch1.pageY
-          );
+          initialDistance = Math.hypot(e.touches[1].pageX - e.touches[0].pageX, e.touches[1].pageY - e.touches[0].pageY);
           initialZoom = state.zoom;
         }
       });
 
-      container.addEventListener('touchmove', (e) => {
+      container.addEventListener('touchmove', e => {
         if (e.touches.length === 1 && isDragging) {
-          // Single touch drag
           e.preventDefault();
-          const touch = e.touches[0];
-          const x = touch.pageX - container.offsetLeft;
-          const y = touch.pageY - container.offsetTop;
-          const walkX = (x - startX) * 1.5;
-          const walkY = (y - startY) * 1.5;
-          container.scrollLeft = scrollLeft - walkX;
-          container.scrollTop = scrollTop - walkY;
+          container.scrollLeft = scrollLeft - ((e.touches[0].pageX - container.offsetLeft) - startX) * 1.5;
+          container.scrollTop = scrollTop - ((e.touches[0].pageY - container.offsetTop) - startY) * 1.5;
         } else if (e.touches.length === 2) {
-          // Pinch zoom
           e.preventDefault();
-          const touch1 = e.touches[0];
-          const touch2 = e.touches[1];
-          const currentDistance = Math.hypot(
-            touch2.pageX - touch1.pageX,
-            touch2.pageY - touch1.pageY
-          );
-
-          // Calculate zoom based on pinch distance
-          const scale = currentDistance / initialDistance;
-          const newZoom = Math.min(Math.max(initialZoom * scale, 50), 300);
-
-          state.zoom = newZoom;
-          state.showZoomControls = true;
+          const dist = Math.hypot(e.touches[1].pageX - e.touches[0].pageX, e.touches[1].pageY - e.touches[0].pageY);
+          state.zoom = Math.min(Math.max(initialZoom * (dist / initialDistance), 50), 300);
           renderApp();
         }
       });
 
-      container.addEventListener('touchend', (e) => {
-        if (e.touches.length === 0) {
-          isDragging = false;
-          initialDistance = 0;
-        }
-      });
-
-      // Add zoom wheel event
+      container.addEventListener('touchend', e => { if (e.touches.length === 0) { isDragging = false; initialDistance = 0; } });
       container.addEventListener('wheel', handleZoomWheel);
-
       return container;
     }
 
-    // Create zoom controls
-    function createZoomControls() {
-      const zoomControls = createElement('div', {
-        className: `zoom-controls ${state.showZoomControls ? 'visible' : ''}`
-      });
-
-      zoomControls.appendChild(createElement('span', {}, Math.round(state.zoom) + '%'));
-      zoomControls.appendChild(createElement('button', {
-        className: 'zoom-reset',
-        onClick: resetZoom
-      }, 'Sıfırla'));
-
-      return zoomControls;
-    }
-
-    // Initialize the app
-    loadFromStorage(); // Load saved data on startup
+    // ─── INIT ───
+    loadFromStorage();
     renderApp();
 
-    // Add document-level paste event listener for Ctrl+V functionality
+    window.addEventListener('resize', debounce(() => renderApp(), 200));
+
     document.addEventListener('paste', function (e) {
-      // Only handle paste if we're on the form tab
       if (state.activeTab !== 'form') return;
-
       const target = e.target;
-      const isEditableTarget = target instanceof HTMLElement && (
-        target.isContentEditable ||
-        ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) ||
-        !!target.closest('[contenteditable="true"]')
-      );
-
-      // Metin giriş alanlarında normal yapıştırmayı engelleme
-      if (isEditableTarget) return;
-
-      if (!e.clipboardData || !e.clipboardData.items) return;
+      if (target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return;
+      if (!e.clipboardData?.items) return;
 
       const items = Array.from(e.clipboardData.items);
       const fileItem = items.find(item => item.type.indexOf('image') !== -1 || item.type === 'application/pdf');
@@ -2961,8 +1856,7 @@
 
       e.preventDefault();
       e.stopPropagation();
-
-      state.files = [file]; // Replace any existing files
+      state.files = [file];
       showNotification(file.type === 'application/pdf' ? 'PDF yapıştırıldı' : 'Görsel yapıştırıldı', 'success');
       renderApp();
     });
