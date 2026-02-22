@@ -1672,10 +1672,16 @@
           if (!Array.isArray(displayData)) displayData = [String(displayData)];
 
           const contentDiv = createElement('div', { className: 'space-y-1' });
-          displayData.forEach(line => {
+          displayData.forEach((line, lineIdx) => {
             if (!line || line.trim() === '') {
               contentDiv.appendChild(createElement('div', { className: 'h-1.5' }));
             } else {
+              if (lineIdx > 0) {
+                contentDiv.appendChild(createElement('hr', {
+                  className: 'border-0',
+                  style: { height: '1px', background: 'currentColor', opacity: '0.18', margin: '6px 0' }
+                }));
+              }
               const p = createElement('p', { className: `${currentTheme.text} text-sm leading-relaxed font-mono` });
               const temp = document.createElement('div');
               temp.innerHTML = line;
