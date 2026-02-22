@@ -1129,6 +1129,7 @@
         const rowColor = typeColors[alt.type] || '';
         const row = createElement('tr', {
           className: `border-t border-brand-100 dark:border-brand-700/40 cursor-pointer transition-colors duration-150 ${isSelected ? 'ring-2 ring-accent-400 ring-inset' : ''} ${rowColor}`,
+          'data-alt-row': String(i),
           onClick: () => toggleAlternativeSelection(i)
         });
 
@@ -1385,11 +1386,11 @@
           entryHeader.appendChild(createElement('input', {
             type: 'text', id: `edit-title-${index}`,
             className: `flex-1 px-3 py-1.5 rounded-lg border ${currentTheme.accent} bg-white dark:bg-brand-800 text-sm font-semibold ${currentTheme.title} focus:outline-none`,
-            value: entry.title || `Alternatif ${index + 1}`,
+            value: entry.title || `Hesaplama ${index + 1}`,
             placeholder: 'Başlık girin...'
           }));
         } else {
-          entryHeader.appendChild(createElement('h4', { className: `text-sm font-bold ${currentTheme.title}` }, entry.title || `Alternatif ${index + 1}`));
+          entryHeader.appendChild(createElement('h4', { className: `text-sm font-bold ${currentTheme.title}` }, entry.title || `Hesaplama ${index + 1}`));
         }
 
         const entryActions = createElement('div', { className: 'flex items-center gap-1 flex-shrink-0' });
@@ -1593,7 +1594,20 @@
       state.selectedAltIndexes = state.selectedAltIndexes.includes(index)
         ? state.selectedAltIndexes.filter(i => i !== index)
         : [...state.selectedAltIndexes, index];
-      renderApp();
+
+      const row = document.querySelector(`[data-alt-row="${index}"]`);
+      if (row) {
+        const isNowSelected = state.selectedAltIndexes.includes(index);
+        const cb = row.querySelector('input[type="checkbox"]');
+        if (cb) cb.checked = isNowSelected;
+        if (isNowSelected) {
+          row.classList.add('ring-2', 'ring-accent-400', 'ring-inset');
+        } else {
+          row.classList.remove('ring-2', 'ring-accent-400', 'ring-inset');
+        }
+      } else {
+        renderApp();
+      }
     }
 
     function showSelectedAlternatives() {
@@ -1611,7 +1625,8 @@
       const selected = state.result.alternatives.filter((_, i) => state.selectedAltIndexes.includes(i));
       const lines = selected.map((alt, i) => formatAlternative(alt, i, state.kat, state.karmaList));
       if (!lines.length) lines.push("");
-      const newEntryBase = { date: new Date().toLocaleString(), data: lines, kat: state.kat };
+      const num = getNextHesaplamaNumber();
+      const newEntryBase = { date: new Date().toLocaleString(), data: lines, kat: state.kat, title: `Hesaplama ${num}` };
 
       if (state.files.length > 0) {
         const reader = new FileReader();
@@ -1631,12 +1646,24 @@
       }
     }
 
+    function getNextHesaplamaNumber() {
+      let max = 0;
+      processHistoryData.forEach(entry => {
+        if (entry.title) {
+          const match = entry.title.match(/^Hesaplama\s+(\d+)$/i);
+          if (match) max = Math.max(max, parseInt(match[1], 10));
+        }
+      });
+      return max + 1;
+    }
+
     function saveProcess() {
       if (!state.finalAlternatives?.length) { state.error = "Kaydedilecek bir alternatif yok!"; renderApp(); return; }
       state.error = "";
       const lines = state.finalAlternatives.map((alt, i) => formatAlternative(alt, i, state.kat, state.karmaList));
       if (!lines.length) lines.push("");
-      const newEntryBase = { date: new Date().toLocaleString(), data: lines, kat: state.kat };
+      const num = getNextHesaplamaNumber();
+      const newEntryBase = { date: new Date().toLocaleString(), data: lines, kat: state.kat, title: `Hesaplama ${num}` };
 
       if (state.files.length > 0) {
         const reader = new FileReader();
@@ -1731,7 +1758,7 @@
       if (!titleInput || !contentTextarea) { cancelHistoryEdit(); return; }
 
       const updated = { ...state.history[index] };
-      updated.title = titleInput.value.trim() || `Alternatif ${index + 1}`;
+      updated.title = titleInput.value.trim() || `Hesaplama ${index + 1}`;
       const lines = contentTextarea.value.split('\n').filter(l => l !== null && l !== undefined);
       updated.data = lines.map(l => l.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'));
       if (!updated.data.length) updated.data = [''];
